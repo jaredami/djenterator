@@ -6,8 +6,8 @@ interface InstrumentRowProps {
 }
 
 const InstrumentRow: FC<InstrumentRowProps> = ({ instrumentName, beats }) => (
-  <div className='instrument-row'>
-    <div className='label'>{instrumentName}</div>
+  <div className="instrument-row">
+    <div className="label">{instrumentName}</div>
     {beats.map((beat, index) => (
       <div key={index} className={`beat ${beat ? 'active' : ''}`} />
     ))}

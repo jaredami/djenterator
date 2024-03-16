@@ -8,17 +8,21 @@ import './App.css';
 const App: React.FC = () => {
   const [bpm, setBPM] = useState<number>(100);
   const [instruments, setInstruments] = useState<{ [key: string]: boolean[] }>({
-    'Kick': Array(16).fill(false),
-    'Snare': Array(16).fill(false),
+    Kick: Array(16).fill(false),
+    Snare: Array(16).fill(false),
     'Hi-hat': Array(16).fill(false),
-    'Crash': Array(16).fill(false)
+    Crash: Array(16).fill(false),
   });
 
   const generateBeat = (): void => {
-    const newInstruments = { ...instruments };
+    const newInstruments = {
+      ...instruments,
+    };
 
     for (const instrument in newInstruments) {
-      newInstruments[instrument] = newInstruments[instrument].map(() => Math.random() > 0.5);
+      newInstruments[instrument] = newInstruments[instrument].map(
+        () => Math.random() > 0.5,
+      );
     }
 
     setInstruments(newInstruments);

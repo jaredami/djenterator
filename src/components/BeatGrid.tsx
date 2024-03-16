@@ -8,7 +8,7 @@ interface GridProps {
 }
 
 const Grid: FC<GridProps> = ({ instruments }) => (
-  <div className='grid'>
+  <div className="grid">
     {Object.keys(instruments).map((instrument) => (
       <InstrumentRow
         key={instrument}

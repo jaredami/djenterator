@@ -6,7 +6,11 @@ interface BPMInputProps {
 }
 
 const BPMInput: FC<BPMInputProps> = ({ bpm, setBPM }) => (
-  <input type="number" value={bpm} onChange={e => setBPM(Number(e.target.value))} />
+  <input
+    type="number"
+    value={bpm}
+    onChange={(e) => setBPM(Number(e.target.value))}
+  />
 );
 
 export default BPMInput;
