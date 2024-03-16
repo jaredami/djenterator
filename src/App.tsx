@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import BPMInput from './components/BPMInput';
 import GeneratorButton from './components/GeneratorButton';
 import BeatGrid from './components/BeatGrid';
-import './App.css';
+import './App.scss';
 
 const App: React.FC = () => {
   const [bpm, setBPM] = useState<number>(100);
