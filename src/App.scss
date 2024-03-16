@@ -1,3 +1,12 @@
+$instrument-1-color: #de5b7b;
+$instrument-2-color: #ff8b94;
+$instrument-3-color: #ffaaa5;
+$instrument-4-color: #ffd3b6;
+$instrument-5-color: #dcedc1;
+$instrument-6-color: #a8e6cf;
+$instrument-7-color: #ffd4e5;
+$instrument-8-color: #eecbff;
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -6,34 +15,9 @@
 }
 
 body {
-  font-family: Arial, sans-serif;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: auto repeat(16, 1fr);
-  gap: 1px;
-  margin-top: 20px;
-}
-
-.instrument-row {
-  display: contents;
-}
-
-.instrument-row .label {
-  padding: 10px;
-  background-color: #cccccc;
-  text-align: center;
-}
-
-.instrument-row .beat {
-  height: 20px;
-  background-color: #ffffff;
-  border: 1px solid #dddddd;
-}
-
-.instrument-row .beat.active {
-  background-color: #000000;
+  background-color: #070707;
+  height: 100vh;
+  transition: all 300ms;
 }
 
 button {
@@ -43,7 +27,105 @@ button {
   cursor: pointer;
 }
 
-input[type=number] {
+input[type='number'] {
   width: 60px;
   margin-right: 10px;
+}
+
+.grid {
+  border-radius: 4px;
+  color: #eef2f3;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: auto repeat(16, 1fr);
+  margin-top: 20px;
+  margin: 0 auto;
+  padding-top: 20vh;
+  width: 900px;
+}
+
+.instrument-row {
+  display: contents;
+
+  &:nth-child(1) .label,
+  &:nth-child(1) .beat.active {
+    background-color: $instrument-1-color;
+  }
+
+  &:nth-child(2) .label,
+  &:nth-child(2) .beat.active {
+    background-color: $instrument-2-color;
+  }
+
+  &:nth-child(3) .label,
+  &:nth-child(3) .beat.active {
+    background-color: $instrument-3-color;
+  }
+
+  &:nth-child(4) .label,
+  &:nth-child(4) .beat.active {
+    background-color: $instrument-4-color;
+  }
+
+  &:nth-child(5) .label,
+  &:nth-child(5) .beat.active {
+    background-color: $instrument-5-color;
+  }
+
+  &:nth-child(6) .label,
+  &:nth-child(6) .beat.active {
+    background-color: $instrument-6-color;
+  }
+
+  &:nth-child(7) .label,
+  &:nth-child(7) .beat.active {
+    background-color: $instrument-7-color;
+  }
+
+  &:nth-child(8) .label,
+  &:nth-child(8) .beat.active {
+    background-color: $instrument-8-color;
+  }
+}
+
+.label {
+  color: #070707;
+  padding: 10px;
+  background-color: #cccccc;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.beat {
+  border: 1px solid #dddddd;
+  background-color: #352f2f;
+  border-radius: 4px;
+  transition: all 300ms;
+
+  &.active {
+    background-color: #000000;
+  }
+
+  &:hover {
+    cursor: pointer;
+    filter: brightness(130%);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.col-dark > * {
+  background-color: #222121;
+}
+
+.active {
+  filter: brightness(130%);
+}
+
+#instrumentVolumeContainer {
+  height: 100%;
+  width: 10%;
+  float: left;
 }
