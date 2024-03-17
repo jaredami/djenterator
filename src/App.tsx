@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './App.scss';
 import BPMInput from './components/BPMInput';
 import BeatGrid from './components/BeatGrid';
@@ -33,16 +33,23 @@ const App: React.FC = () => {
     [],
   );
 
-  useEffect(() => {
-    if (isPlaying) {
-      const timerMilliseconds = 60000 / bpm / 4;
-      const timer = setInterval(() => {
-        setCurrentBeat((currentBeat + 1) % 16);
-      }, timerMilliseconds);
+  const beatInterval = useRef<number | null>(null);
 
-      return () => clearInterval(timer);
+  const playPause = (): void => {
+    if (!isPlaying) {
+      beatInterval.current = window.setInterval(
+        () => {
+          setCurrentBeat((prevBeat) => (prevBeat + 1) % 16);
+        },
+        60000 / bpm / 4,
+      );
+    } else {
+      if (beatInterval.current !== null) {
+        window.clearInterval(beatInterval.current);
+      }
     }
-  }, [isPlaying, bpm, currentBeat]);
+    setIsPlaying(!isPlaying);
+  };
 
   useEffect(() => {
     Object.keys(instruments).forEach((instrument) => {
@@ -75,9 +82,7 @@ const App: React.FC = () => {
     <div>
       <BPMInput bpm={bpm} setBPM={setBPM} />
       <GeneratorButton generateBeat={generateBeat} />
-      <button onClick={() => setIsPlaying(!isPlaying)}>
-        {isPlaying ? 'Pause' : 'Play'}
-      </button>
+      <button onClick={playPause}>{isPlaying ? 'Pause' : 'Play'}</button>
       <BeatGrid
         instruments={instruments}
         currentBeat={currentBeat}
