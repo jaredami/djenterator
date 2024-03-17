@@ -104,6 +104,11 @@ input[type='number'] {
 
   &.active {
     background-color: #000000;
+    filter: brightness(130%);
+  }
+
+  &.current {
+    filter: brightness(150%);
   }
 
   &:hover {
@@ -118,10 +123,6 @@ input[type='number'] {
 
 .col-dark > * {
   background-color: #222121;
-}
-
-.active {
-  filter: brightness(130%);
 }
 
 #instrumentVolumeContainer {
