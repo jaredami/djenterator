@@ -35,12 +35,10 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (isPlaying) {
-      const timer = setInterval(
-        () => {
-          setCurrentBeat((currentBeat + 1) % 16);
-        },
-        (60 / bpm) * 1000,
-      );
+      const timerMilliseconds = 60000 / bpm / 4;
+      const timer = setInterval(() => {
+        setCurrentBeat((currentBeat + 1) % 16);
+      }, timerMilliseconds);
 
       return () => clearInterval(timer);
     }
