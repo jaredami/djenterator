@@ -14,7 +14,7 @@ const InstrumentRow: FC<InstrumentRowProps> = ({
   toggleBeat,
 }) => (
   <div className="instrument-row">
-    <div className="label">{instrumentName}</div>
+    <div className="label">{instrumentName.toUpperCase()}</div>
     {beats.map((beat, index) => (
       <div
         key={index}
