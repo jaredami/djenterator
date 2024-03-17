@@ -1,17 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import BPMInput from './components/BPMInput';
-import GeneratorButton from './components/GeneratorButton';
-import BeatGrid from './components/BeatGrid';
+import React, { useEffect, useMemo, useState } from 'react';
 import './App.scss';
-
+import BPMInput from './components/BPMInput';
+import BeatGrid from './components/BeatGrid';
+import GeneratorButton from './components/GeneratorButton';
 import crashClip from './sounds/crash.mp3';
-import rideClip from './sounds/ride.mp3';
 import hatOpenClip from './sounds/hat-open.mp3';
-import hatClosedClip from './sounds/hat-closed.mp3';
-import tomClip from './sounds/tom.mp3';
-import snareClip from './sounds/snare-flanged.mp3';
-import clapClip from './sounds/clap.mp3';
 import kickClip from './sounds/kick.mp3';
+import snareClip from './sounds/snare-flanged.mp3';
 
 interface Sounds {
   [key: string]: HTMLAudioElement;
@@ -28,12 +23,15 @@ const App: React.FC = () => {
     Crash: Array(16).fill(false),
   });
 
-  const sounds: Sounds = {
-    Kick: new Audio(kickClip),
-    Snare: new Audio(snareClip),
-    'Hi-hat': new Audio(hatOpenClip),
-    Crash: new Audio(crashClip),
-  };
+  const sounds: Sounds = useMemo(
+    () => ({
+      Kick: new Audio(kickClip),
+      Snare: new Audio(snareClip),
+      'Hi-hat': new Audio(hatOpenClip),
+      Crash: new Audio(crashClip),
+    }),
+    [],
+  );
 
   useEffect(() => {
     if (isPlaying) {
@@ -69,6 +67,12 @@ const App: React.FC = () => {
     setInstruments(newInstruments);
   };
 
+  const toggleBeat = (instrument: string, index: number): void => {
+    const newInstruments = { ...instruments };
+    newInstruments[instrument][index] = !newInstruments[instrument][index];
+    setInstruments(newInstruments);
+  };
+
   return (
     <div>
       <BPMInput bpm={bpm} setBPM={setBPM} />
@@ -76,7 +80,11 @@ const App: React.FC = () => {
       <button onClick={() => setIsPlaying(!isPlaying)}>
         {isPlaying ? 'Pause' : 'Play'}
       </button>
-      <BeatGrid instruments={instruments} currentBeat={currentBeat} />
+      <BeatGrid
+        instruments={instruments}
+        currentBeat={currentBeat}
+        toggleBeat={toggleBeat}
+      />
     </div>
   );
 };

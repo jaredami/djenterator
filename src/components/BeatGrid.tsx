@@ -6,9 +6,10 @@ interface GridProps {
     [key: string]: boolean[];
   };
   currentBeat: number;
+  toggleBeat: (instrument: string, beat: number) => void;
 }
 
-const Grid: FC<GridProps> = ({ instruments, currentBeat }) => (
+const Grid: FC<GridProps> = ({ instruments, currentBeat, toggleBeat }) => (
   <div className="grid">
     {Object.keys(instruments).map((instrument) => (
       <InstrumentRow
@@ -16,6 +17,7 @@ const Grid: FC<GridProps> = ({ instruments, currentBeat }) => (
         instrumentName={instrument}
         beats={instruments[instrument]}
         currentBeat={currentBeat}
+        toggleBeat={toggleBeat}
       />
     ))}
   </div>
