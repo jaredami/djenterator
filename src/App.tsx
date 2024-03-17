@@ -61,12 +61,63 @@ const App: React.FC = () => {
   }, [sounds, currentBeat, instruments]);
 
   const generateBeat = (): void => {
-    const newInstruments = { ...instruments };
+    type InstrumentPattern = {
+      patterns: number[];
+      always: number[];
+    };
 
-    for (const instrument in newInstruments) {
-      newInstruments[instrument] = newInstruments[instrument].map(
-        () => Math.random() > 0.5,
-      );
+    const instrumentPatterns: Record<keyof Instruments, InstrumentPattern> = {
+      Kick: { patterns: [], always: [0] },
+      Snare: { patterns: [2, 3, 4], always: [] },
+      'Hi-hat': { patterns: [2, 3, 4], always: [] },
+      Crash: { patterns: [8, 16], always: [] },
+    };
+
+    type Instruments = {
+      Kick: boolean[];
+      Snare: boolean[];
+      'Hi-hat': boolean[];
+      Crash: boolean[];
+    };
+
+    const newInstruments: Instruments = {
+      Kick: Array(16).fill(false),
+      Snare: Array(16).fill(false),
+      'Hi-hat': Array(16).fill(false),
+      Crash: Array(16).fill(false),
+    };
+
+    for (const [instrument, { patterns, always }] of Object.entries(
+      instrumentPatterns,
+    )) {
+      // Get the instrument name as a key of the Instruments type
+      const instrumentName = instrument as keyof Instruments;
+
+      // Activate the beats that should always be active for this instrument
+      for (const i of always) {
+        newInstruments[instrumentName][i] = true;
+      }
+
+      // If there are no patterns for this instrument, randomly activate beats
+      if (patterns.length === 0) {
+        newInstruments[instrumentName] = newInstruments[instrumentName].map(
+          // Randomly activate the beat, but keep it active if it was already active due to the always array
+          (beat) => beat || Math.random() > 0.5,
+        );
+        // Skip the rest of the loop
+        continue;
+      }
+
+      // Randomly select a pattern and activate the beats for that pattern
+      const selectedPattern =
+        patterns[Math.floor(Math.random() * patterns.length)];
+      for (
+        let i = 0;
+        i < newInstruments[instrumentName].length;
+        i += selectedPattern
+      ) {
+        newInstruments[instrumentName][i] = true;
+      }
     }
 
     setInstruments(newInstruments);
