@@ -12,26 +12,45 @@ interface Sounds {
   [key: string]: HTMLAudioElement;
 }
 
+type Instruments = {
+  Kick: boolean[];
+  Snare: boolean[];
+  'Hi-hat': boolean[];
+  Crash: boolean[];
+};
+
+type InstrumentPattern = {
+  patterns: number[];
+  always: number[];
+};
+
 const sectionLength = 32;
 const totalSections = 4;
+
+const instrumentPatterns: Record<keyof Instruments, InstrumentPattern> = {
+  Crash: { patterns: [8, sectionLength], always: [] },
+  'Hi-hat': { patterns: [2, 3, 4], always: [] },
+  Snare: { patterns: [2, 3, 4], always: [] },
+  Kick: { patterns: [], always: [0] },
+};
 
 const App: React.FC = () => {
   const [bpm, setBPM] = useState<number>(100);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentBeat, setCurrentBeat] = useState<number>(0);
   const [instruments, setInstruments] = useState<{ [key: string]: boolean[] }>({
-    Kick: Array(sectionLength * totalSections).fill(false),
-    Snare: Array(sectionLength * totalSections).fill(false),
-    'Hi-hat': Array(sectionLength * totalSections).fill(false),
     Crash: Array(sectionLength * totalSections).fill(false),
+    'Hi-hat': Array(sectionLength * totalSections).fill(false),
+    Snare: Array(sectionLength * totalSections).fill(false),
+    Kick: Array(sectionLength * totalSections).fill(false),
   });
 
   const sounds: Sounds = useMemo(
     () => ({
-      Kick: new Audio(kickClip),
-      Snare: new Audio(snareClip),
-      'Hi-hat': new Audio(hatOpenClip),
       Crash: new Audio(crashClip),
+      'Hi-hat': new Audio(hatOpenClip),
+      Snare: new Audio(snareClip),
+      Kick: new Audio(kickClip),
     }),
     [],
   );
@@ -65,31 +84,12 @@ const App: React.FC = () => {
     });
   }, [sounds, currentBeat, instruments]);
 
-  type Instruments = {
-    Kick: boolean[];
-    Snare: boolean[];
-    'Hi-hat': boolean[];
-    Crash: boolean[];
-  };
-
   const generateBeat = (): Instruments => {
-    type InstrumentPattern = {
-      patterns: number[];
-      always: number[];
-    };
-
-    const instrumentPatterns: Record<keyof Instruments, InstrumentPattern> = {
-      Kick: { patterns: [], always: [0] },
-      Snare: { patterns: [2, 3, 4], always: [] },
-      'Hi-hat': { patterns: [2, 3, 4], always: [] },
-      Crash: { patterns: [8, sectionLength], always: [] },
-    };
-
-    const newInstruments: Instruments = {
-      Kick: Array(sectionLength).fill(false),
-      Snare: Array(sectionLength).fill(false),
-      'Hi-hat': Array(sectionLength).fill(false),
+    const instruments: Instruments = {
       Crash: Array(sectionLength).fill(false),
+      'Hi-hat': Array(sectionLength).fill(false),
+      Snare: Array(sectionLength).fill(false),
+      Kick: Array(sectionLength).fill(false),
     };
 
     for (const [instrument, { patterns, always }] of Object.entries(
@@ -100,12 +100,12 @@ const App: React.FC = () => {
 
       // Activate the beats that should always be active for this instrument
       for (const i of always) {
-        newInstruments[instrumentName][i] = true;
+        instruments[instrumentName][i] = true;
       }
 
       // If there are no patterns for this instrument, randomly activate beats
       if (patterns.length === 0) {
-        newInstruments[instrumentName] = newInstruments[instrumentName].map(
+        instruments[instrumentName] = instruments[instrumentName].map(
           // Randomly activate the beat, but keep it active if it was already active due to the always array
           (beat) => beat || Math.random() > 0.5,
         );
@@ -118,22 +118,22 @@ const App: React.FC = () => {
         patterns[Math.floor(Math.random() * patterns.length)];
       for (
         let i = 0;
-        i < newInstruments[instrumentName].length;
+        i < instruments[instrumentName].length;
         i += selectedPattern
       ) {
-        newInstruments[instrumentName][i] = true;
+        instruments[instrumentName][i] = true;
       }
     }
 
-    return newInstruments;
+    return instruments;
   };
 
   const generateSong = (): void => {
     const fullBeat: Instruments = {
-      Kick: [],
-      Snare: [],
-      'Hi-hat': [],
       Crash: [],
+      'Hi-hat': [],
+      Snare: [],
+      Kick: [],
     };
 
     for (let i = 0; i < 4; i++) {
