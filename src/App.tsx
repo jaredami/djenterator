@@ -5,8 +5,8 @@ import BeatGrid from './components/BeatGrid';
 import GeneratorButton from './components/GeneratorButton';
 import crashClip from './sounds/crash.mp3';
 import hatOpenClip from './sounds/hat-open.mp3';
-import kickClip from './sounds/kick.mp3';
-import snareClip from './sounds/snare-flanged.mp3';
+import kickClip from './sounds/kick-metal.wav';
+import snareClip from './sounds/snare-metal.wav';
 
 interface Sounds {
   [key: string]: HTMLAudioElement;
