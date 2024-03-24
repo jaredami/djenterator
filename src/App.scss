@@ -37,11 +37,9 @@ input[type='number'] {
   color: #eef2f3;
   display: grid;
   gap: 4px;
-  grid-template-columns: auto repeat(16, 1fr);
   margin-top: 20px;
   margin: 0 auto;
   padding-top: 20vh;
-  width: 900px;
 }
 
 .instrument-row {

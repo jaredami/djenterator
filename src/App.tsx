@@ -12,17 +12,18 @@ interface Sounds {
   [key: string]: HTMLAudioElement;
 }
 
-const sectionLength = 16;
+const sectionLength = 32;
+const totalSections = 4;
 
 const App: React.FC = () => {
   const [bpm, setBPM] = useState<number>(100);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentBeat, setCurrentBeat] = useState<number>(0);
   const [instruments, setInstruments] = useState<{ [key: string]: boolean[] }>({
-    Kick: Array(sectionLength).fill(false),
-    Snare: Array(sectionLength).fill(false),
-    'Hi-hat': Array(sectionLength).fill(false),
-    Crash: Array(sectionLength).fill(false),
+    Kick: Array(sectionLength * totalSections).fill(false),
+    Snare: Array(sectionLength * totalSections).fill(false),
+    'Hi-hat': Array(sectionLength * totalSections).fill(false),
+    Crash: Array(sectionLength * totalSections).fill(false),
   });
 
   const sounds: Sounds = useMemo(
@@ -41,7 +42,9 @@ const App: React.FC = () => {
     if (!isPlaying) {
       beatInterval.current = window.setInterval(
         () => {
-          setCurrentBeat((prevBeat) => (prevBeat + 1) % sectionLength);
+          setCurrentBeat(
+            (prevBeat) => (prevBeat + 1) % (sectionLength * totalSections),
+          );
         },
         60000 / bpm / 4,
       );
@@ -62,7 +65,14 @@ const App: React.FC = () => {
     });
   }, [sounds, currentBeat, instruments]);
 
-  const generateBeat = (): void => {
+  type Instruments = {
+    Kick: boolean[];
+    Snare: boolean[];
+    'Hi-hat': boolean[];
+    Crash: boolean[];
+  };
+
+  const generateBeat = (): Instruments => {
     type InstrumentPattern = {
       patterns: number[];
       always: number[];
@@ -73,13 +83,6 @@ const App: React.FC = () => {
       Snare: { patterns: [2, 3, 4], always: [] },
       'Hi-hat': { patterns: [2, 3, 4], always: [] },
       Crash: { patterns: [8, sectionLength], always: [] },
-    };
-
-    type Instruments = {
-      Kick: boolean[];
-      Snare: boolean[];
-      'Hi-hat': boolean[];
-      Crash: boolean[];
     };
 
     const newInstruments: Instruments = {
@@ -122,7 +125,29 @@ const App: React.FC = () => {
       }
     }
 
-    setInstruments(newInstruments);
+    return newInstruments;
+  };
+
+  const generateSong = (): void => {
+    const fullBeat: Instruments = {
+      Kick: [],
+      Snare: [],
+      'Hi-hat': [],
+      Crash: [],
+    };
+
+    for (let i = 0; i < 4; i++) {
+      const beat = generateBeat();
+      Object.keys(beat).forEach((instrument) => {
+        const instrumentName = instrument as keyof Instruments;
+        fullBeat[instrumentName] = [
+          ...beat[instrumentName],
+          ...fullBeat[instrumentName],
+        ];
+      });
+    }
+
+    setInstruments(fullBeat);
   };
 
   const toggleBeat = (instrument: string, index: number): void => {
@@ -134,12 +159,13 @@ const App: React.FC = () => {
   return (
     <div>
       <BPMInput bpm={bpm} setBPM={setBPM} />
-      <GeneratorButton generateBeat={generateBeat} />
+      <GeneratorButton generateBeat={generateSong} />
       <button onClick={playPause}>{isPlaying ? 'Pause' : 'Play'}</button>
       <BeatGrid
         instruments={instruments}
         currentBeat={currentBeat}
         toggleBeat={toggleBeat}
+        totalNumberOfBeats={sectionLength * totalSections}
       />
     </div>
   );
