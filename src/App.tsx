@@ -12,15 +12,17 @@ interface Sounds {
   [key: string]: HTMLAudioElement;
 }
 
+const sectionLength = 16;
+
 const App: React.FC = () => {
   const [bpm, setBPM] = useState<number>(100);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentBeat, setCurrentBeat] = useState<number>(0);
   const [instruments, setInstruments] = useState<{ [key: string]: boolean[] }>({
-    Kick: Array(16).fill(false),
-    Snare: Array(16).fill(false),
-    'Hi-hat': Array(16).fill(false),
-    Crash: Array(16).fill(false),
+    Kick: Array(sectionLength).fill(false),
+    Snare: Array(sectionLength).fill(false),
+    'Hi-hat': Array(sectionLength).fill(false),
+    Crash: Array(sectionLength).fill(false),
   });
 
   const sounds: Sounds = useMemo(
@@ -39,7 +41,7 @@ const App: React.FC = () => {
     if (!isPlaying) {
       beatInterval.current = window.setInterval(
         () => {
-          setCurrentBeat((prevBeat) => (prevBeat + 1) % 16);
+          setCurrentBeat((prevBeat) => (prevBeat + 1) % sectionLength);
         },
         60000 / bpm / 4,
       );
@@ -70,7 +72,7 @@ const App: React.FC = () => {
       Kick: { patterns: [], always: [0] },
       Snare: { patterns: [2, 3, 4], always: [] },
       'Hi-hat': { patterns: [2, 3, 4], always: [] },
-      Crash: { patterns: [8, 16], always: [] },
+      Crash: { patterns: [8, sectionLength], always: [] },
     };
 
     type Instruments = {
@@ -81,10 +83,10 @@ const App: React.FC = () => {
     };
 
     const newInstruments: Instruments = {
-      Kick: Array(16).fill(false),
-      Snare: Array(16).fill(false),
-      'Hi-hat': Array(16).fill(false),
-      Crash: Array(16).fill(false),
+      Kick: Array(sectionLength).fill(false),
+      Snare: Array(sectionLength).fill(false),
+      'Hi-hat': Array(sectionLength).fill(false),
+      Crash: Array(sectionLength).fill(false),
     };
 
     for (const [instrument, { patterns, always }] of Object.entries(
