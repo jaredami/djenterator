@@ -7,6 +7,7 @@ import crashClip from './sounds/crash.mp3';
 import hatOpenClip from './sounds/hat-open.mp3';
 import kickClip from './sounds/kick-metal.wav';
 import snareClip from './sounds/snare-metal.wav';
+import guitarClip from './sounds/guitar-note.mp3';
 
 interface Sounds {
   [key: string]: HTMLAudioElement;
@@ -17,11 +18,13 @@ type Instruments = {
   Snare: boolean[];
   'Hi-hat': boolean[];
   Crash: boolean[];
+  Guitar: boolean[];
 };
 
 type InstrumentPattern = {
   patterns: number[];
   always: number[];
+  match?: keyof Instruments;
 };
 
 const sectionLength = 32;
@@ -32,6 +35,7 @@ const instrumentPatterns: Record<keyof Instruments, InstrumentPattern> = {
   'Hi-hat': { patterns: [2, 3, 4], always: [] },
   Snare: { patterns: [2, 3, 4], always: [] },
   Kick: { patterns: [], always: [0] },
+  Guitar: { patterns: [], always: [], match: 'Kick' },
 };
 
 const App: React.FC = () => {
@@ -43,6 +47,7 @@ const App: React.FC = () => {
     'Hi-hat': Array(sectionLength * totalSections).fill(false),
     Snare: Array(sectionLength * totalSections).fill(false),
     Kick: Array(sectionLength * totalSections).fill(false),
+    Guitar: Array(sectionLength * totalSections).fill(false),
   });
 
   const sounds: Sounds = useMemo(
@@ -51,6 +56,7 @@ const App: React.FC = () => {
       'Hi-hat': new Audio(hatOpenClip),
       Snare: new Audio(snareClip),
       Kick: new Audio(kickClip),
+      Guitar: new Audio(guitarClip),
     }),
     [],
   );
@@ -90,6 +96,7 @@ const App: React.FC = () => {
       'Hi-hat': Array(sectionLength).fill(false),
       Snare: Array(sectionLength).fill(false),
       Kick: Array(sectionLength).fill(false),
+      Guitar: Array(sectionLength).fill(false),
     };
 
     for (const [instrument, { patterns, always }] of Object.entries(
@@ -97,6 +104,13 @@ const App: React.FC = () => {
     )) {
       // Get the instrument name as a key of the Instruments type
       const instrumentName = instrument as keyof Instruments;
+
+      // If there is a match property, copy the beats from that instrument
+      const match = instrumentPatterns[instrumentName].match;
+      if (match) {
+        instruments[instrumentName] = instruments[match];
+        continue;
+      }
 
       // Activate the beats that should always be active for this instrument
       for (const i of always) {
@@ -134,6 +148,7 @@ const App: React.FC = () => {
       'Hi-hat': [],
       Snare: [],
       Kick: [],
+      Guitar: [],
     };
 
     for (let i = 0; i < 4; i++) {
