@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import './App.scss';
 import BPMInput from './components/BPMInput';
 import BeatGrid from './components/BeatGrid';
@@ -63,7 +69,7 @@ const App: React.FC = () => {
 
   const beatInterval = useRef<number | null>(null);
 
-  const playPause = (): void => {
+  const playPause = useCallback((): void => {
     if (!isPlaying) {
       beatInterval.current = window.setInterval(
         () => {
@@ -73,13 +79,12 @@ const App: React.FC = () => {
         },
         60000 / bpm / 4,
       );
-    } else {
-      if (beatInterval.current !== null) {
-        window.clearInterval(beatInterval.current);
-      }
+    } else if (beatInterval.current !== null) {
+      window.clearInterval(beatInterval.current);
     }
+
     setIsPlaying(!isPlaying);
-  };
+  }, [bpm, isPlaying]);
 
   useEffect(() => {
     Object.keys(instruments).forEach((instrument) => {
@@ -90,7 +95,7 @@ const App: React.FC = () => {
     });
   }, [sounds, currentBeat, instruments]);
 
-  const generateBeat = (): Instruments => {
+  const generateBeat = useCallback((): Instruments => {
     const instruments: Instruments = {
       Crash: Array(sectionLength).fill(false),
       'Hi-hat': Array(sectionLength).fill(false),
@@ -140,7 +145,7 @@ const App: React.FC = () => {
     }
 
     return instruments;
-  };
+  }, []);
 
   const generateSong = (): void => {
     const fullBeat: Instruments = {
