@@ -5,18 +5,19 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import * as Tone from 'tone';
 import './App.scss';
 import BPMInput from './components/BPMInput';
 import BeatGrid from './components/BeatGrid';
 import GeneratorButton from './components/GeneratorButton';
 import crashClip from './sounds/crash.mp3';
+import guitarClip from './sounds/guitar-note.mp3';
 import hatOpenClip from './sounds/hat-open.mp3';
 import kickClip from './sounds/kick-metal.wav';
 import snareClip from './sounds/snare-metal.wav';
-import guitarClip from './sounds/guitar-note.mp3';
 
 interface Sounds {
-  [key: string]: HTMLAudioElement;
+  [key: string]: Tone.Player;
 }
 
 type Instruments = {
@@ -56,44 +57,59 @@ const App: React.FC = () => {
     Guitar: Array(sectionLength * totalSections).fill(false),
   });
 
+  const currentBeatRef = useRef(currentBeat);
+  const instrumentsRef = useRef(instruments);
+  useEffect(() => {
+    currentBeatRef.current = currentBeat;
+    instrumentsRef.current = instruments;
+  }, [currentBeat, instruments]);
+
   const sounds: Sounds = useMemo(
     () => ({
-      Crash: new Audio(crashClip),
-      'Hi-hat': new Audio(hatOpenClip),
-      Snare: new Audio(snareClip),
-      Kick: new Audio(kickClip),
-      Guitar: new Audio(guitarClip),
+      Crash: new Tone.Player(crashClip).toDestination(),
+      'Hi-hat': new Tone.Player(hatOpenClip).toDestination(),
+      Snare: new Tone.Player(snareClip).toDestination(),
+      Kick: new Tone.Player(kickClip).toDestination(),
+      Guitar: new Tone.Player(guitarClip).toDestination(),
     }),
     [],
   );
 
-  const beatInterval = useRef<number | null>(null);
+  // Adjust the volume of the sounds for dev purposes
+  Object.values(sounds).forEach((sound) => {
+    sound.volume.value = -15;
+  });
+  sounds['Guitar'].volume.value = -Infinity;
 
-  const playPause = useCallback((): void => {
+  const playPause = useCallback(async (): Promise<void> => {
     if (!isPlaying) {
-      beatInterval.current = window.setInterval(
-        () => {
-          setCurrentBeat(
-            (prevBeat) => (prevBeat + 1) % (sectionLength * totalSections),
-          );
-        },
-        60000 / bpm / 4,
-      );
-    } else if (beatInterval.current !== null) {
-      window.clearInterval(beatInterval.current);
-    }
+      await Tone.start();
 
+      Tone.Transport.scheduleRepeat((time) => {
+        setCurrentBeat((prevBeat) => {
+          const newBeat = (prevBeat + 1) % (sectionLength * totalSections);
+          currentBeatRef.current = newBeat;
+          return newBeat;
+        });
+        Object.keys(instrumentsRef.current).forEach((instrument) => {
+          const instrumentName = instrument as keyof Instruments;
+
+          if (instrumentsRef.current[instrumentName][currentBeatRef.current]) {
+            sounds[instrumentName].start(time);
+          }
+        });
+      }, '16n');
+      Tone.Transport.start();
+    } else {
+      Tone.Transport.cancel();
+      Tone.Transport.stop();
+    }
     setIsPlaying(!isPlaying);
-  }, [bpm, isPlaying]);
+  }, [isPlaying, sounds]);
 
   useEffect(() => {
-    Object.keys(instruments).forEach((instrument) => {
-      if (instruments[instrument][currentBeat]) {
-        sounds[instrument].currentTime = 0;
-        sounds[instrument].play();
-      }
-    });
-  }, [sounds, currentBeat, instruments]);
+    Tone.Transport.bpm.value = bpm;
+  }, [bpm]);
 
   const generateBeat = useCallback((): Instruments => {
     const instruments: Instruments = {
