@@ -9,7 +9,6 @@ import * as Tone from 'tone';
 import './App.scss';
 import BPMInput from './components/BPMInput';
 import BeatGrid from './components/BeatGrid';
-import GeneratorButton from './components/GeneratorButton';
 import crashClip from './sounds/crash.mp3';
 import guitarClip from './sounds/guitar-note.mp3';
 import hatOpenClip from './sounds/hat-open.mp3';
@@ -46,7 +45,7 @@ const instrumentPatterns: Record<keyof Instruments, InstrumentPattern> = {
 };
 
 const App: React.FC = () => {
-  const [bpm, setBPM] = useState<number>(120);
+  const [bpm, setBPM] = useState<number>(100);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentBeat, setCurrentBeat] = useState<number>(0);
   const [instruments, setInstruments] = useState<{ [key: string]: boolean[] }>({
@@ -201,7 +200,7 @@ const App: React.FC = () => {
   return (
     <div>
       <BPMInput bpm={bpm} setBPM={setBPM} />
-      <GeneratorButton generateBeat={generateSong} />
+      <button onClick={generateSong}>Generate Beat</button>
       <button onClick={playPause}>{isPlaying ? 'Pause' : 'Play'}</button>
       <button
         onClick={() => {
