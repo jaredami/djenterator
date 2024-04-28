@@ -46,7 +46,7 @@ const instrumentPatterns: Record<keyof Instruments, InstrumentPattern> = {
 };
 
 const App: React.FC = () => {
-  const [bpm, setBPM] = useState<number>(100);
+  const [bpm, setBPM] = useState<number>(120);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentBeat, setCurrentBeat] = useState<number>(0);
   const [instruments, setInstruments] = useState<{ [key: string]: boolean[] }>({
@@ -79,7 +79,7 @@ const App: React.FC = () => {
   Object.values(sounds).forEach((sound) => {
     sound.volume.value = -15;
   });
-  sounds['Guitar'].volume.value = -Infinity;
+  sounds['Guitar'].volume.value = -20;
 
   const playPause = useCallback(async (): Promise<void> => {
     if (!isPlaying) {
@@ -95,7 +95,13 @@ const App: React.FC = () => {
           const instrumentName = instrument as keyof Instruments;
 
           if (instrumentsRef.current[instrumentName][currentBeatRef.current]) {
-            sounds[instrumentName].start(time);
+            if (instrumentName === 'Guitar') {
+              const durationInBeats = (Math.floor(Math.random() * 8) + 1) / 8;
+              const durationInSeconds = (60 / bpm) * durationInBeats;
+              sounds[instrumentName].start(time, 0, durationInSeconds);
+            } else {
+              sounds[instrumentName].start(time);
+            }
           }
         });
       }, '16n');
@@ -105,7 +111,7 @@ const App: React.FC = () => {
       Tone.Transport.stop();
     }
     setIsPlaying(!isPlaying);
-  }, [isPlaying, sounds]);
+  }, [isPlaying, sounds, bpm]);
 
   useEffect(() => {
     Tone.Transport.bpm.value = bpm;
