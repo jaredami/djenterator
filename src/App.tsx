@@ -203,6 +203,16 @@ const App: React.FC = () => {
       <BPMInput bpm={bpm} setBPM={setBPM} />
       <GeneratorButton generateBeat={generateSong} />
       <button onClick={playPause}>{isPlaying ? 'Pause' : 'Play'}</button>
+      <button
+        onClick={() => {
+          setCurrentBeat(0);
+          Tone.Transport.stop();
+          Tone.Transport.cancel();
+          setIsPlaying(false);
+        }}
+      >
+        Restart
+      </button>
       <BeatGrid
         instruments={instruments}
         currentBeat={currentBeat}
