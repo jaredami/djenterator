@@ -14,6 +14,7 @@ import guitarClip from './sounds/guitar-note.mp3';
 import hatOpenClip from './sounds/hat-open.mp3';
 import kickClip from './sounds/kick-metal.wav';
 import snareClip from './sounds/snare-metal.wav';
+import { VolumeControl } from './components/VolumeControl';
 
 interface Sounds {
   [key: string]: Tone.Player;
@@ -55,14 +56,6 @@ const App: React.FC = () => {
     Kick: Array(sectionLength * totalSections).fill(false),
     Guitar: Array(sectionLength * totalSections).fill(false),
   });
-
-  const currentBeatRef = useRef(currentBeat);
-  const instrumentsRef = useRef(instruments);
-  useEffect(() => {
-    currentBeatRef.current = currentBeat;
-    instrumentsRef.current = instruments;
-  }, [currentBeat, instruments]);
-
   const sounds: Sounds = useMemo(
     () => ({
       Crash: new Tone.Player(crashClip).toDestination(),
@@ -73,12 +66,26 @@ const App: React.FC = () => {
     }),
     [],
   );
-
-  // Adjust the volume of the sounds for dev purposes
-  Object.values(sounds).forEach((sound) => {
-    sound.volume.value = -15;
+  const [volumes, setVolumes] = useState<{ [key: string]: number }>({
+    Crash: -18,
+    'Hi-hat': -15,
+    Snare: -15,
+    Kick: -12,
+    Guitar: -20,
   });
-  sounds['Guitar'].volume.value = -20;
+
+  useEffect(() => {
+    Object.entries(volumes).forEach(([instrument, volume]) => {
+      sounds[instrument].volume.value = volume;
+    });
+  }, [volumes, sounds]);
+
+  const currentBeatRef = useRef(currentBeat);
+  const instrumentsRef = useRef(instruments);
+  useEffect(() => {
+    currentBeatRef.current = currentBeat;
+    instrumentsRef.current = instruments;
+  }, [currentBeat, instruments]);
 
   const playPause = useCallback(async (): Promise<void> => {
     if (!isPlaying) {
@@ -199,6 +206,37 @@ const App: React.FC = () => {
 
   return (
     <div>
+      <div>
+        <VolumeControl
+          label="Crash"
+          value={volumes.Crash}
+          onChange={(newVolume) => setVolumes({ ...volumes, Crash: newVolume })}
+        />
+        <VolumeControl
+          label="Hi-hat"
+          value={volumes['Hi-hat']}
+          onChange={(newVolume) =>
+            setVolumes({ ...volumes, 'Hi-hat': newVolume })
+          }
+        />
+        <VolumeControl
+          label="Snare"
+          value={volumes.Snare}
+          onChange={(newVolume) => setVolumes({ ...volumes, Snare: newVolume })}
+        />
+        <VolumeControl
+          label="Kick"
+          value={volumes.Kick}
+          onChange={(newVolume) => setVolumes({ ...volumes, Kick: newVolume })}
+        />
+        <VolumeControl
+          label="Guitar"
+          value={volumes.Guitar}
+          onChange={(newVolume) =>
+            setVolumes({ ...volumes, Guitar: newVolume })
+          }
+        />
+      </div>
       <BPMInput bpm={bpm} setBPM={setBPM} />
       <button onClick={generateSong}>Generate Beat</button>
       <button onClick={playPause}>{isPlaying ? 'Pause' : 'Play'}</button>
