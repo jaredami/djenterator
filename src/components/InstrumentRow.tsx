@@ -18,7 +18,7 @@ const InstrumentRow: FC<InstrumentRowProps> = ({
     {beats.map((beat, index) => (
       <div
         key={index}
-        className={`beat ${beat ? 'active' : ''} ${index === currentBeat ? 'current' : ''}`}
+        className={`beat ${beat ? 'active' : ''} ${index + 1 === currentBeat ? 'current' : ''}`}
         onClick={() => toggleBeat(instrumentName, index)}
       />
     ))}
