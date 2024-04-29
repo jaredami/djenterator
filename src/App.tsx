@@ -123,7 +123,7 @@ const App: React.FC = () => {
     Tone.Transport.bpm.value = bpm;
   }, [bpm]);
 
-  const generateBeat = useCallback((): Instruments => {
+  const generateSection = useCallback((): Instruments => {
     const instruments: Instruments = {
       Crash: Array(sectionLength).fill(false),
       'Hi-hat': Array(sectionLength).fill(false),
@@ -185,7 +185,7 @@ const App: React.FC = () => {
     };
 
     for (let i = 0; i < 4; i++) {
-      const beat = generateBeat();
+      const beat = generateSection();
       Object.keys(beat).forEach((instrument) => {
         const instrumentName = instrument as keyof Instruments;
         fullBeat[instrumentName] = [
