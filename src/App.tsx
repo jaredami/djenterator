@@ -133,7 +133,7 @@ const App: React.FC = () => {
   }, [bpm]);
 
   const generateSection = useCallback((): Instruments => {
-    const instruments: Instruments = {
+    const instrumentsSection: Instruments = {
       Crash: Array(sectionLength).fill(false),
       'Hi-hat': Array(sectionLength).fill(false),
       Snare: Array(sectionLength).fill(false),
@@ -151,18 +151,20 @@ const App: React.FC = () => {
       // If there is a match property, copy the beats from that instrument
       const match = instrumentPatterns[instrumentName].match;
       if (match) {
-        instruments[instrumentName] = instruments[match];
+        instrumentsSection[instrumentName] = instrumentsSection[match];
         continue;
       }
 
       // Activate the beats that should always be active for this instrument
       for (const i of always) {
-        instruments[instrumentName][i] = true;
+        instrumentsSection[instrumentName][i] = true;
       }
 
       // If there are no patterns for this instrument, randomly activate beats
       if (patterns.length === 0) {
-        instruments[instrumentName] = instruments[instrumentName].map(
+        instrumentsSection[instrumentName] = instrumentsSection[
+          instrumentName
+        ].map(
           // Randomly activate the beat, but keep it active if it was already active due to the always array
           (beat) => beat || Math.random() > 0.5,
         );
@@ -175,14 +177,14 @@ const App: React.FC = () => {
         patterns[Math.floor(Math.random() * patterns.length)];
       for (
         let i = 0;
-        i < instruments[instrumentName].length;
+        i < instrumentsSection[instrumentName].length;
         i += selectedPattern
       ) {
-        instruments[instrumentName][i] = true;
+        instrumentsSection[instrumentName][i] = true;
       }
     }
 
-    return instruments;
+    return instrumentsSection;
   }, []);
 
   const generateSong = (): void => {
