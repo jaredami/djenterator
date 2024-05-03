@@ -14,6 +14,7 @@ import guitarClip from './sounds/guitar-note.mp3';
 import hatOpenClip from './sounds/hat-open.mp3';
 import kickClip from './sounds/kick-metal.wav';
 import snareClip from './sounds/snare-metal.wav';
+import bassClip from './sounds/bass-note-f-trim-2.mp3';
 import { VolumeControl } from './components/VolumeControl';
 
 interface Sounds {
@@ -26,6 +27,7 @@ type Instruments = {
   'Hi-hat': boolean[];
   Crash: boolean[];
   Guitar: boolean[];
+  Bass: boolean[];
 };
 
 type InstrumentPattern = {
@@ -43,6 +45,7 @@ const instrumentPatterns: Record<keyof Instruments, InstrumentPattern> = {
   Snare: { patterns: [2, 3, 4], always: [] },
   Kick: { patterns: [], always: [0] },
   Guitar: { patterns: [], always: [], match: 'Kick' },
+  Bass: { patterns: [], always: [], match: 'Kick' },
 };
 
 const App: React.FC = () => {
@@ -55,6 +58,7 @@ const App: React.FC = () => {
     Snare: Array(sectionLength * totalSections).fill(false),
     Kick: Array(sectionLength * totalSections).fill(false),
     Guitar: Array(sectionLength * totalSections).fill(false),
+    Bass: Array(sectionLength * totalSections).fill(false),
   });
   const sounds: Sounds = useMemo(
     () => ({
@@ -63,6 +67,7 @@ const App: React.FC = () => {
       Snare: new Tone.Player(snareClip).toDestination(),
       Kick: new Tone.Player(kickClip).toDestination(),
       Guitar: new Tone.Player(guitarClip).toDestination(),
+      Bass: new Tone.Player(bassClip).toDestination(),
     }),
     [],
   );
@@ -72,6 +77,7 @@ const App: React.FC = () => {
     Snare: -15,
     Kick: -12,
     Guitar: -20,
+    Bass: -18,
   });
 
   useEffect(() => {
@@ -105,7 +111,10 @@ const App: React.FC = () => {
               const durationInBeats = (Math.floor(Math.random() * 8) + 1) / 8;
               const durationInSeconds = (60 / bpm) * durationInBeats;
               sounds[instrumentName].start(time, 0, durationInSeconds);
-            } else {
+
+              // Play the bass note at the same time and for same duration as the guitar note
+              sounds['Bass'].start(time, 0, durationInSeconds);
+            } else if (instrumentName !== 'Bass') {
               sounds[instrumentName].start(time);
             }
           }
@@ -130,6 +139,7 @@ const App: React.FC = () => {
       Snare: Array(sectionLength).fill(false),
       Kick: Array(sectionLength).fill(false),
       Guitar: Array(sectionLength).fill(false),
+      Bass: Array(sectionLength).fill(false),
     };
 
     for (const [instrument, { patterns, always }] of Object.entries(
@@ -182,6 +192,7 @@ const App: React.FC = () => {
       Snare: [],
       Kick: [],
       Guitar: [],
+      Bass: [],
     };
 
     for (let i = 0; i < 4; i++) {
@@ -235,6 +246,11 @@ const App: React.FC = () => {
           onChange={(newVolume) =>
             setVolumes({ ...volumes, Guitar: newVolume })
           }
+        />
+        <VolumeControl
+          label="Bass"
+          value={volumes.Bass}
+          onChange={(newVolume) => setVolumes({ ...volumes, Bass: newVolume })}
         />
       </div>
       <BPMInput bpm={bpm} setBPM={setBPM} />
