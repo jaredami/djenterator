@@ -1,27 +1,31 @@
-import crashClip from './sounds/crash.mp3';
-import guitarClip from './sounds/guitar-note.mp3';
-import hatOpenClip from './sounds/hat-open.mp3';
-import kickClip from './sounds/kick-metal.wav';
-import snareClip from './sounds/snare-metal.wav';
-import bassClip from './sounds/bass-note-f-trim-2.mp3';
+import crashClip from '../sounds/crash.mp3';
+import guitarClip from '../sounds/guitar-note.mp3';
+import hatOpenClip from '../sounds/hat-open.mp3';
+import kickClip from '../sounds/kick-metal.wav';
+import snareClip from '../sounds/snare-metal.wav';
+import bassClip from '../sounds/bass-note-f-trim-2.mp3';
+import { Generator } from '../components/SequenceGenerator';
 
-export type Generator<GeneratorKeys extends string> = {
-  clips: Record<GeneratorKeys, string>;
-  activations: Record<GeneratorKeys, boolean[]>;
-  patterns: Record<
-    GeneratorKeys,
-    {
-      patterns: number[];
-      always: number[];
-      match?: GeneratorKeys;
-    }
-  >;
-  volumes: Record<GeneratorKeys, number>;
-};
+// export type DrumGeneratorKeys =
+//   | 'Crash'
+//   | 'Hi-hat'
+//   | 'Snare'
+//   | 'Kick'
+//   | 'Guitar'
+//   | 'Bass';
 
-export const DrumsGenerator: Generator<
-  'Crash' | 'Hi-hat' | 'Snare' | 'Kick' | 'Guitar' | 'Bass'
-> = {
+export const DrumGeneratorKeysArray = [
+  'Crash',
+  'Hi-hat',
+  'Snare',
+  'Kick',
+  'Guitar',
+  'Bass',
+] as const;
+
+export type DrumGeneratorKeys = (typeof DrumGeneratorKeysArray)[number];
+
+export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
   clips: {
     Crash: crashClip,
     'Hi-hat': hatOpenClip,
@@ -47,11 +51,11 @@ export const DrumsGenerator: Generator<
     Bass: { patterns: [], always: [], match: 'Kick' },
   },
   volumes: {
-    Crash: 0,
-    'Hi-hat': 0,
-    Snare: 0,
-    Kick: 0,
-    Guitar: 0,
-    Bass: 0,
+    Crash: -15,
+    'Hi-hat': -15,
+    Snare: -15,
+    Kick: -15,
+    Guitar: -20,
+    Bass: -18,
   },
 };
