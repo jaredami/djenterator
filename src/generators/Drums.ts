@@ -6,14 +6,6 @@ import snareClip from '../sounds/snare-metal.wav';
 import bassClip from '../sounds/bass-note-f-trim-2.mp3';
 import { Generator } from '../components/SequenceGenerator';
 
-// export type DrumGeneratorKeys =
-//   | 'Crash'
-//   | 'Hi-hat'
-//   | 'Snare'
-//   | 'Kick'
-//   | 'Guitar'
-//   | 'Bass';
-
 export const DrumGeneratorKeysArray = [
   'Crash',
   'Hi-hat',

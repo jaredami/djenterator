@@ -1,12 +1,15 @@
 import React from 'react';
 import './App.scss';
 import SequenceGenerator from './components/SequenceGenerator';
-import { DrumsGenerator } from './generators/Drums';
+import { DrumGeneratorKeysArray, DrumsGenerator } from './generators/Drums';
 
 const App: React.FC = () => {
   return (
     <div>
-      <SequenceGenerator generator={DrumsGenerator} />
+      <SequenceGenerator
+        generator={DrumsGenerator}
+        keys={DrumGeneratorKeysArray}
+      />
     </div>
   );
 };

@@ -1,13 +1,6 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as Tone from 'tone';
 import '../App.scss';
-import { DrumGeneratorKeys, DrumGeneratorKeysArray } from '../generators/Drums';
 import BPMInput from './BPMInput';
 import BeatGrid from './BeatGrid';
 import { VolumeControl } from './VolumeControl';
@@ -30,43 +23,53 @@ export interface Sounds {
   [key: string]: Tone.Player;
 }
 
+type SequenceGeneratorProps<
+  T extends Generator<string>,
+  K extends readonly string[],
+> = {
+  generator: T;
+  keys: K;
+};
+
 const sectionLength = 32;
 const totalSections = 4;
 
-type SequenceGeneratorProps = {
-  generator: Generator<DrumGeneratorKeys>;
-};
+const SequenceGenerator = <
+  T extends Generator<string>,
+  K extends readonly string[],
+>({
+  generator,
+  keys,
+}: SequenceGeneratorProps<T, K>) => {
+  type GeneratorKeys = keyof typeof generator.clips;
 
-const SequenceGenerator: React.FC<SequenceGeneratorProps> = ({ generator }) => {
   const [bpm, setBPM] = useState<number>(100);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentBeat, setCurrentBeat] = useState<number>(0);
 
   const [instruments, setInstruments] = useState<
-    Generator<DrumGeneratorKeys>['activations']
+    Generator<GeneratorKeys>['activations']
   >(
     Object.fromEntries(
-      DrumGeneratorKeysArray.map(
-        (instrument): [DrumGeneratorKeys, boolean[]] => [
-          instrument,
-          Array(sectionLength * totalSections).fill(false),
-        ],
-      ),
-    ) as Generator<DrumGeneratorKeys>['activations'],
+      keys.map((instrument): [GeneratorKeys, boolean[]] => [
+        instrument,
+        Array(sectionLength * totalSections).fill(false),
+      ]),
+    ) as Generator<GeneratorKeys>['activations'],
   );
 
   const sounds: Sounds = useMemo(() => {
     return Object.fromEntries(
-      DrumGeneratorKeysArray.map((instrument: DrumGeneratorKeys) => [
+      keys.map((instrument: GeneratorKeys) => [
         instrument,
         new Tone.Player(generator.clips[instrument]).toDestination(),
       ]),
     );
-  }, [generator.clips]);
+  }, [generator.clips, keys]);
 
-  const [volumes, setVolumes] = useState<
-    Generator<DrumGeneratorKeys>['volumes']
-  >(generator.volumes);
+  const [volumes, setVolumes] = useState<Generator<GeneratorKeys>['volumes']>(
+    generator.volumes,
+  );
 
   useEffect(() => {
     Object.entries(volumes).forEach(([key, volume]) => {
@@ -92,7 +95,7 @@ const SequenceGenerator: React.FC<SequenceGeneratorProps> = ({ generator }) => {
           return newBeat;
         });
         Object.keys(instrumentsRef.current).forEach((instrumentName) => {
-          const key = instrumentName as DrumGeneratorKeys;
+          const key = instrumentName as GeneratorKeys;
           if (instrumentsRef.current[key][currentBeatRef.current]) {
             if (key === 'Guitar') {
               const durationInBeats = (Math.floor(Math.random() * 8) + 1) / 8;
@@ -120,22 +123,20 @@ const SequenceGenerator: React.FC<SequenceGeneratorProps> = ({ generator }) => {
   }, [bpm]);
 
   const generateSection =
-    useCallback((): Generator<DrumGeneratorKeys>['activations'] => {
-      const instrumentsSection: Generator<DrumGeneratorKeys>['activations'] =
+    useCallback((): Generator<GeneratorKeys>['activations'] => {
+      const instrumentsSection: Generator<GeneratorKeys>['activations'] =
         Object.fromEntries(
-          DrumGeneratorKeysArray.map(
-            (instrument): [DrumGeneratorKeys, boolean[]] => [
-              instrument,
-              Array(sectionLength).fill(false),
-            ],
-          ),
-        ) as Generator<DrumGeneratorKeys>['activations'];
+          keys.map((instrument): [GeneratorKeys, boolean[]] => [
+            instrument,
+            Array(sectionLength).fill(false),
+          ]),
+        ) as Generator<GeneratorKeys>['activations'];
 
       for (const [instrument, { patterns, always, match }] of Object.entries(
         generator.patterns,
       )) {
         // Get the instrument name as a key of the Instruments type
-        const instrumentName = instrument as DrumGeneratorKeys;
+        const instrumentName = instrument as GeneratorKeys;
 
         if (match) {
           instrumentsSection[instrumentName] = instrumentsSection[match];
@@ -172,10 +173,10 @@ const SequenceGenerator: React.FC<SequenceGeneratorProps> = ({ generator }) => {
       }
 
       return instrumentsSection;
-    }, [generator.patterns]);
+    }, [generator.patterns, keys]);
 
   const generateSong = (): void => {
-    const fullBeat: Generator<DrumGeneratorKeys>['activations'] = {
+    const fullBeat: Generator<GeneratorKeys>['activations'] = {
       Crash: [],
       'Hi-hat': [],
       Snare: [],
@@ -187,7 +188,7 @@ const SequenceGenerator: React.FC<SequenceGeneratorProps> = ({ generator }) => {
     for (let i = 0; i < 4; i++) {
       const beat = generateSection();
       Object.keys(beat).forEach((instrument) => {
-        const instrumentName = instrument as DrumGeneratorKeys;
+        const instrumentName = instrument as GeneratorKeys;
         fullBeat[instrumentName] = [
           ...beat[instrumentName],
           ...fullBeat[instrumentName],
@@ -198,7 +199,7 @@ const SequenceGenerator: React.FC<SequenceGeneratorProps> = ({ generator }) => {
     setInstruments(fullBeat);
   };
 
-  const toggleBeat = (instrument: DrumGeneratorKeys, index: number): void => {
+  const toggleBeat = (instrument: GeneratorKeys, index: number): void => {
     const newInstruments = { ...instruments };
     newInstruments[instrument][index] = !newInstruments[instrument][index];
     setInstruments(newInstruments);
