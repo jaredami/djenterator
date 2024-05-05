@@ -77,6 +77,10 @@ const SequenceGenerator = <
     });
   }, [volumes, sounds]);
 
+  useEffect(() => {
+    Tone.Transport.bpm.value = bpm;
+  }, [bpm]);
+
   const currentBeatRef = useRef(currentBeat);
   const instrumentsRef = useRef(instruments);
   useEffect(() => {
@@ -117,10 +121,6 @@ const SequenceGenerator = <
     }
     setIsPlaying(!isPlaying);
   }, [isPlaying, sounds, bpm]);
-
-  useEffect(() => {
-    Tone.Transport.bpm.value = bpm;
-  }, [bpm]);
 
   const generateSection =
     useCallback((): Generator<GeneratorKeys>['activations'] => {
@@ -176,14 +176,10 @@ const SequenceGenerator = <
     }, [generator.patterns, keys]);
 
   const generateSong = (): void => {
-    const fullBeat: Generator<GeneratorKeys>['activations'] = {
-      Crash: [],
-      'Hi-hat': [],
-      Snare: [],
-      Kick: [],
-      Guitar: [],
-      Bass: [],
-    };
+    const fullBeat: Generator<GeneratorKeys>['activations'] =
+      Object.fromEntries(
+        keys.map((instrument): [GeneratorKeys, boolean[]] => [instrument, []]),
+      ) as Generator<GeneratorKeys>['activations'];
 
     for (let i = 0; i < 4; i++) {
       const beat = generateSection();
@@ -208,40 +204,17 @@ const SequenceGenerator = <
   return (
     <div>
       <div>
-        <VolumeControl
-          label="Crash"
-          value={volumes.Crash}
-          onChange={(newVolume) => setVolumes({ ...volumes, Crash: newVolume })}
-        />
-        <VolumeControl
-          label="Hi-hat"
-          value={volumes['Hi-hat']}
-          onChange={(newVolume) =>
-            setVolumes({ ...volumes, 'Hi-hat': newVolume })
-          }
-        />
-        <VolumeControl
-          label="Snare"
-          value={volumes.Snare}
-          onChange={(newVolume) => setVolumes({ ...volumes, Snare: newVolume })}
-        />
-        <VolumeControl
-          label="Kick"
-          value={volumes.Kick}
-          onChange={(newVolume) => setVolumes({ ...volumes, Kick: newVolume })}
-        />
-        <VolumeControl
-          label="Guitar"
-          value={volumes.Guitar}
-          onChange={(newVolume) =>
-            setVolumes({ ...volumes, Guitar: newVolume })
-          }
-        />
-        <VolumeControl
-          label="Bass"
-          value={volumes.Bass}
-          onChange={(newVolume) => setVolumes({ ...volumes, Bass: newVolume })}
-        />
+        {/* Create volume controls for each instrument of generator */}
+        {Object.keys(generator.clips).map((instrument) => (
+          <VolumeControl
+            key={instrument}
+            label={instrument}
+            value={volumes[instrument as GeneratorKeys]}
+            onChange={(newVolume) =>
+              setVolumes({ ...volumes, [instrument]: newVolume })
+            }
+          />
+        ))}
       </div>
       <BPMInput bpm={bpm} setBPM={setBPM} />
       <button onClick={generateSong}>Generate Beat</button>
