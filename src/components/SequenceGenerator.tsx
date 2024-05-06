@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Tone from 'tone';
 import '../App.scss';
 import BPMInput from './BPMInput';
@@ -6,17 +6,10 @@ import BeatGrid from './BeatGrid';
 import { VolumeControl } from './VolumeControl';
 
 export type Generator<GeneratorKeys extends string> = {
-  clips: Record<GeneratorKeys, string>;
+  clips: Record<GeneratorKeys, Tone.Player>;
   activations: Record<GeneratorKeys, boolean[]>;
-  patterns: Record<
-    GeneratorKeys,
-    {
-      patterns: number[];
-      always: number[];
-      match?: GeneratorKeys;
-    }
-  >;
   volumes: Record<GeneratorKeys, number>;
+  generateSection: (sectionLength: number) => Record<GeneratorKeys, boolean[]>;
 };
 
 export interface Sounds {
@@ -58,24 +51,15 @@ const SequenceGenerator = <
     ) as Generator<GeneratorKeys>['activations'],
   );
 
-  const sounds: Sounds = useMemo(() => {
-    return Object.fromEntries(
-      keys.map((instrument: GeneratorKeys) => [
-        instrument,
-        new Tone.Player(generator.clips[instrument]).toDestination(),
-      ]),
-    );
-  }, [generator.clips, keys]);
-
   const [volumes, setVolumes] = useState<Generator<GeneratorKeys>['volumes']>(
     generator.volumes,
   );
 
   useEffect(() => {
     Object.entries(volumes).forEach(([key, volume]) => {
-      sounds[key].volume.value = volume;
+      generator.clips[key].volume.value = volume;
     });
-  }, [volumes, sounds]);
+  }, [volumes, generator.clips]);
 
   useEffect(() => {
     Tone.Transport.bpm.value = bpm;
@@ -101,15 +85,19 @@ const SequenceGenerator = <
         Object.keys(instrumentsRef.current).forEach((instrumentName) => {
           const key = instrumentName as GeneratorKeys;
           if (instrumentsRef.current[key][currentBeatRef.current]) {
-            if (key === 'Guitar') {
+            // if the key is of length 1, play for a duration of one beat
+            if (key.length === 1) {
+              const durationInSeconds = 60 / bpm / 4;
+              generator.clips[key].start(time, 0, durationInSeconds);
+            } else if (key === 'Guitar') {
               const durationInBeats = (Math.floor(Math.random() * 8) + 1) / 8;
               const durationInSeconds = (60 / bpm) * durationInBeats;
-              sounds[key].start(time, 0, durationInSeconds);
+              generator.clips[key].start(time, 0, durationInSeconds);
 
               // Play the bass note at the same time and for same duration as the guitar note
-              sounds['Bass'].start(time, 0, durationInSeconds);
+              generator.clips['Bass'].start(time, 0, durationInSeconds);
             } else if (key !== 'Bass') {
-              sounds[key].start(time);
+              generator.clips[key].start(time);
             }
           }
         });
@@ -120,60 +108,7 @@ const SequenceGenerator = <
       Tone.Transport.stop();
     }
     setIsPlaying(!isPlaying);
-  }, [isPlaying, sounds, bpm]);
-
-  const generateSection =
-    useCallback((): Generator<GeneratorKeys>['activations'] => {
-      const instrumentsSection: Generator<GeneratorKeys>['activations'] =
-        Object.fromEntries(
-          keys.map((instrument): [GeneratorKeys, boolean[]] => [
-            instrument,
-            Array(sectionLength).fill(false),
-          ]),
-        ) as Generator<GeneratorKeys>['activations'];
-
-      for (const [instrument, { patterns, always, match }] of Object.entries(
-        generator.patterns,
-      )) {
-        // Get the instrument name as a key of the Instruments type
-        const instrumentName = instrument as GeneratorKeys;
-
-        if (match) {
-          instrumentsSection[instrumentName] = instrumentsSection[match];
-          continue;
-        }
-
-        // Activate the beats that should always be active for this instrument
-        for (const i of always) {
-          instrumentsSection[instrumentName][i] = true;
-        }
-
-        // If there are no patterns for this instrument, randomly activate beats
-        if (patterns.length === 0) {
-          instrumentsSection[instrumentName] = instrumentsSection[
-            instrumentName
-          ].map(
-            // Randomly activate the beat, but keep it active if it was already active due to the always array
-            (beat) => beat || Math.random() > 0.5,
-          );
-          // Skip the rest of the loop
-          continue;
-        }
-
-        // Randomly select a pattern and activate the beats for that pattern
-        const selectedPattern =
-          patterns[Math.floor(Math.random() * patterns.length)];
-        for (
-          let i = 0;
-          i < instrumentsSection[instrumentName].length;
-          i += selectedPattern
-        ) {
-          instrumentsSection[instrumentName][i] = true;
-        }
-      }
-
-      return instrumentsSection;
-    }, [generator.patterns, keys]);
+  }, [isPlaying, generator.clips, bpm]);
 
   const generateSong = (): void => {
     const fullBeat: Generator<GeneratorKeys>['activations'] =
@@ -181,12 +116,12 @@ const SequenceGenerator = <
         keys.map((instrument): [GeneratorKeys, boolean[]] => [instrument, []]),
       ) as Generator<GeneratorKeys>['activations'];
 
-    for (let i = 0; i < 4; i++) {
-      const beat = generateSection();
-      Object.keys(beat).forEach((instrument) => {
+    for (let i = 0; i < totalSections; i++) {
+      const section = generator.generateSection(sectionLength);
+      Object.keys(section).forEach((instrument) => {
         const instrumentName = instrument as GeneratorKeys;
         fullBeat[instrumentName] = [
-          ...beat[instrumentName],
+          ...section[instrumentName],
           ...fullBeat[instrumentName],
         ];
       });
@@ -232,7 +167,6 @@ const SequenceGenerator = <
       <BeatGrid
         instruments={instruments}
         currentBeat={currentBeat}
-        // TODO fix type
         toggleBeat={toggleBeat}
         totalNumberOfBeats={sectionLength * totalSections}
       />
