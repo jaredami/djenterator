@@ -41,7 +41,7 @@ input[type='number'] {
   gap: 4px;
   margin-top: 20px;
   margin: 0 auto;
-  padding-top: 20vh;
+  padding-top: 2rem;
 }
 
 .instrument-row {
@@ -89,11 +89,12 @@ input[type='number'] {
 }
 
 .label {
+  background-color: #cccccc;
+  border-radius: 4px;
   color: #070707;
   padding: 10px;
-  background-color: #cccccc;
   text-align: center;
-  border-radius: 4px;
+  width: 100px;
 }
 
 .beat {
