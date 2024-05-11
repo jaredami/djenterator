@@ -8,12 +8,8 @@ const App: React.FC = () => {
   return (
     <div>
       <SequenceGenerator
-        generator={DrumsGenerator}
-        keys={DrumGeneratorKeysArray}
-      />
-      <SequenceGenerator
-        generator={GuitarGenerator}
-        keys={GuitarGeneratorKeysArray}
+        generators={[DrumsGenerator, GuitarGenerator]}
+        keys={[DrumGeneratorKeysArray, GuitarGeneratorKeysArray]}
       />
     </div>
   );
