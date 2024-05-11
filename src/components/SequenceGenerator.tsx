@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Tone from 'tone';
 import '../App.scss';
-import BPMInput from './BPMInput';
 import BeatGrid from './BeatGrid';
 import { VolumeControl } from './VolumeControl';
 
@@ -174,7 +173,11 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
           )),
         )}
       </div>
-      <BPMInput bpm={bpm} setBPM={setBPM} />
+      <input
+        type="number"
+        value={bpm}
+        onChange={(e) => setBPM(Number(e.target.value))}
+      />
       <button onClick={generateSong}>Generate Beat</button>
       <button onClick={playPause}>{isPlaying ? 'Pause' : 'Play'}</button>
       <button
