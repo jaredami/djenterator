@@ -75,4 +75,19 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
 
     return section;
   },
+  generateDurations: (section: Activations<GuitarGeneratorKeys>) => {
+    // The durations for each instrument should all be 1 quarter note
+    const oneBeat = 0.25; // 0.25 beats = 1 quarter note
+    const generateInstrumentDurations = (instrument: (boolean | null)[]) => {
+      return instrument.map((beat) => (beat ? oneBeat : null));
+    };
+
+    const durations: Record<GuitarGeneratorKeys, (number | null)[] | null> = {
+      D: generateInstrumentDurations(section.D),
+      B: generateInstrumentDurations(section.B),
+      A: generateInstrumentDurations(section.A),
+    };
+
+    return durations;
+  },
 };

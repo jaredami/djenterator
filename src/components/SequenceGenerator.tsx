@@ -8,6 +8,9 @@ export type Generator<GeneratorKeys extends string> = {
   clips: Record<GeneratorKeys, Tone.Player>;
   volumes: Record<GeneratorKeys, number>;
   generateSection: (sectionLength: number) => Activations<GeneratorKeys>;
+  generateDurations?(
+    section: Activations<GeneratorKeys>,
+  ): Record<GeneratorKeys, (number | null)[] | null>;
 };
 
 export type Activations<GeneratorKeys extends string> = Record<
@@ -28,6 +31,7 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentBeat, setCurrentBeat] = useState<number>(0);
 
+  // Initialize activations to be all false
   const [activations, setActivations] = useState(
     generators.map(
       (generator, genIndex) =>
@@ -37,6 +41,19 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
             Array(sectionLength * totalSections).fill(false),
           ]),
         ) as Activations<string>,
+    ),
+  );
+
+  // Initialize durations to match activations (all beats for all instruments set to null)
+  const [durations, setDurations] = useState(
+    activations.map(
+      (section) =>
+        Object.fromEntries(
+          Object.keys(section).map((instrument) => [
+            instrument,
+            Array(sectionLength * totalSections).fill(null),
+          ]),
+        ) as Record<string, (number | null)[] | null>,
     ),
   );
 
@@ -80,30 +97,18 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
                   currentBeatRef.current
                 ];
               if (isActive) {
-                // TODO - refactor to store duration info in activations or generator
-                // if the key is of length 1, play for a duration of one beat
-                if (instrumentName.length === 1) {
-                  const durationInSeconds = 60 / bpm / 4;
-                  generator.clips[instrumentName].start(
-                    time,
-                    0,
-                    durationInSeconds,
-                  );
-                } else if (instrumentName === 'Guitar') {
-                  const durationInBeats =
-                    (Math.floor(Math.random() * 8) + 1) / 8;
-                  const durationInSeconds = (60 / bpm) * durationInBeats;
-                  generator.clips[instrumentName].start(
-                    time,
-                    0,
-                    durationInSeconds,
-                  );
+                // If there is a duration for this instrument at this beat, use it to determine how long to play the clip
+                const durationInBeats =
+                  durations[genIndex][instrumentName]?.[currentBeatRef.current];
+                const durationInSeconds = durationInBeats
+                  ? (60 / bpm) * durationInBeats
+                  : undefined;
 
-                  // Play the bass note at the same time and for same duration as the guitar note
-                  generator.clips['Bass'].start(time, 0, durationInSeconds);
-                } else if (instrumentName !== 'Bass') {
-                  generator.clips[instrumentName].start(time);
-                }
+                generator.clips[instrumentName].start(
+                  time,
+                  0,
+                  durationInSeconds,
+                );
               }
             },
           );
@@ -115,7 +120,7 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
       Tone.Transport.stop();
     }
     setIsPlaying(!isPlaying);
-  }, [isPlaying, generators, bpm]);
+  }, [isPlaying, generators, bpm, durations]);
 
   const generateSong = (): void => {
     const newActivations = generators.map((generator, genIndex) => {
@@ -136,7 +141,13 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
       return fullBeat;
     });
 
+    // For each generator, call the generateDurations function if it exists to get the durations based on the activations
+    const songDurations = generators.map((generator, index) => {
+      return generator.generateDurations?.(newActivations[index]) ?? {};
+    });
+
     setActivations(newActivations);
+    setDurations(songDurations);
   };
 
   const toggleBeat = (

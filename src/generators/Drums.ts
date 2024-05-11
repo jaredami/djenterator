@@ -97,4 +97,23 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
 
     return section;
   },
+  generateDurations: (section: Activations<DrumGeneratorKeys>) => {
+    const guitarAndBassDurations = section.Guitar.map((_, i) => {
+      if (section.Guitar[i] || section.Bass[i]) {
+        return (Math.floor(Math.random() * 8) + 1) / 8;
+      }
+      return null;
+    });
+
+    const durations: Record<DrumGeneratorKeys, (number | null)[] | null> = {
+      Crash: null,
+      'Hi-hat': null,
+      Snare: null,
+      Kick: null,
+      Guitar: guitarAndBassDurations,
+      Bass: guitarAndBassDurations,
+    };
+
+    return durations;
+  },
 };
