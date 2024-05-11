@@ -1,11 +1,11 @@
+import * as Tone from 'tone';
+import { Activations, Generator } from '../components/SequenceGenerator';
+import bassClip from '../sounds/bass-note-f-trim-2.mp3';
 import crashClip from '../sounds/crash.mp3';
 import guitarClip from '../sounds/guitar-note.mp3';
 import hatOpenClip from '../sounds/hat-open.mp3';
 import kickClip from '../sounds/kick-metal.wav';
 import snareClip from '../sounds/snare-metal.wav';
-import bassClip from '../sounds/bass-note-f-trim-2.mp3';
-import { Generator } from '../components/SequenceGenerator';
-import * as Tone from 'tone';
 
 export const DrumGeneratorKeysArray = [
   'Crash',
@@ -26,14 +26,6 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
     Kick: new Tone.Player(kickClip).toDestination(),
     Guitar: new Tone.Player(guitarClip).toDestination(),
     Bass: new Tone.Player(bassClip).toDestination(),
-  },
-  activations: {
-    Crash: Array(32).fill(false),
-    'Hi-hat': Array(32).fill(false),
-    Snare: Array(32).fill(false),
-    Kick: Array(32).fill(false),
-    Guitar: Array(32).fill(false),
-    Bass: Array(32).fill(false),
   },
   volumes: {
     Crash: -15,
@@ -60,15 +52,14 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
       Bass: { patterns: [], always: [], match: 'Kick' },
     };
 
-    const section: Generator<DrumGeneratorKeys>['activations'] =
-      Object.fromEntries(
-        DrumGeneratorKeysArray.map(
-          (instrument): [DrumGeneratorKeys, boolean[]] => [
-            instrument,
-            Array(sectionLength).fill(false),
-          ],
-        ),
-      ) as Generator<DrumGeneratorKeys>['activations'];
+    const section: Activations<DrumGeneratorKeys> = Object.fromEntries(
+      DrumGeneratorKeysArray.map(
+        (instrument): [DrumGeneratorKeys, boolean[]] => [
+          instrument,
+          Array(sectionLength).fill(false),
+        ],
+      ),
+    ) as Activations<DrumGeneratorKeys>;
 
     for (const [key, { patterns, always, match }] of Object.entries(
       patternsMap,

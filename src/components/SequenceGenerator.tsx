@@ -7,10 +7,14 @@ import { VolumeControl } from './VolumeControl';
 
 export type Generator<GeneratorKeys extends string> = {
   clips: Record<GeneratorKeys, Tone.Player>;
-  activations: Record<GeneratorKeys, boolean[]>;
   volumes: Record<GeneratorKeys, number>;
-  generateSection: (sectionLength: number) => Record<GeneratorKeys, boolean[]>;
+  generateSection: (sectionLength: number) => Activations<GeneratorKeys>;
 };
+
+export type Activations<GeneratorKeys extends string> = Record<
+  GeneratorKeys,
+  boolean[]
+>;
 
 export interface Sounds {
   [key: string]: Tone.Player;
@@ -40,15 +44,13 @@ const SequenceGenerator = <
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentBeat, setCurrentBeat] = useState<number>(0);
 
-  const [activations, setActivations] = useState<
-    Generator<GeneratorKeys>['activations']
-  >(
+  const [activations, setActivations] = useState<Activations<GeneratorKeys>>(
     Object.fromEntries(
       keys.map((instrument): [GeneratorKeys, boolean[]] => [
         instrument,
         Array(sectionLength * totalSections).fill(false),
       ]),
-    ) as Generator<GeneratorKeys>['activations'],
+    ) as Activations<GeneratorKeys>,
   );
 
   const [volumes, setVolumes] = useState<Generator<GeneratorKeys>['volumes']>(
@@ -112,10 +114,9 @@ const SequenceGenerator = <
   }, [isPlaying, generator.clips, bpm]);
 
   const generateSong = (): void => {
-    const fullBeat: Generator<GeneratorKeys>['activations'] =
-      Object.fromEntries(
-        keys.map((instrument): [GeneratorKeys, boolean[]] => [instrument, []]),
-      ) as Generator<GeneratorKeys>['activations'];
+    const fullBeat: Activations<GeneratorKeys> = Object.fromEntries(
+      keys.map((instrument): [GeneratorKeys, boolean[]] => [instrument, []]),
+    ) as Activations<GeneratorKeys>;
 
     for (let i = 0; i < totalSections; i++) {
       const section = generator.generateSection(sectionLength);

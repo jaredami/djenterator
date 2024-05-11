@@ -1,8 +1,8 @@
-import { Generator } from '../components/SequenceGenerator';
+import * as Tone from 'tone';
+import { Activations, Generator } from '../components/SequenceGenerator';
 import AClip from '../sounds/ga1.wav';
 import BClip from '../sounds/gb1.wav';
 import DClip from '../sounds/gd1.wav';
-import * as Tone from 'tone';
 
 export const GuitarGeneratorKeysArray = [
   //   'E',
@@ -36,20 +36,6 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
     //   'F#': FSharpClip,
     //   'F': FClip,
   },
-  activations: {
-    // E: Array(32).fill(false),
-    // 'D#': Array(32).fill(false),
-    D: Array(32).fill(false),
-    // 'C#': Array(32).fill(false),
-    // C: Array(32).fill(false),
-    B: Array(32).fill(false),
-    // 'A#': Array(32).fill(false),
-    A: Array(32).fill(false),
-    // 'G#': Array(32).fill(false),
-    // G: Array(32).fill(false),
-    // 'F#': Array(32).fill(false),
-    // F: Array(32).fill(false),
-  },
   volumes: {
     // E: -15,
     // 'D#': -15,
@@ -70,7 +56,7 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
         instrument,
         Array(32).fill(false),
       ]),
-    ) as Generator<GuitarGeneratorKeys>['activations'];
+    ) as Activations<GuitarGeneratorKeys>;
 
     let lastKey: GuitarGeneratorKeys | null = null;
 
