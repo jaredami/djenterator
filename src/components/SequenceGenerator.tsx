@@ -40,7 +40,7 @@ const SequenceGenerator = <
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentBeat, setCurrentBeat] = useState<number>(0);
 
-  const [instruments, setInstruments] = useState<
+  const [activations, setActivations] = useState<
     Generator<GeneratorKeys>['activations']
   >(
     Object.fromEntries(
@@ -66,11 +66,11 @@ const SequenceGenerator = <
   }, [bpm]);
 
   const currentBeatRef = useRef(currentBeat);
-  const instrumentsRef = useRef(instruments);
+  const activationsRef = useRef(activations);
   useEffect(() => {
     currentBeatRef.current = currentBeat;
-    instrumentsRef.current = instruments;
-  }, [currentBeat, instruments]);
+    activationsRef.current = activations;
+  }, [currentBeat, activations]);
 
   const playPause = useCallback(async (): Promise<void> => {
     if (!isPlaying) {
@@ -82,9 +82,10 @@ const SequenceGenerator = <
           currentBeatRef.current = newBeat;
           return newBeat;
         });
-        Object.keys(instrumentsRef.current).forEach((instrumentName) => {
+        Object.keys(activationsRef.current).forEach((instrumentName) => {
           const key = instrumentName as GeneratorKeys;
-          if (instrumentsRef.current[key][currentBeatRef.current]) {
+          const isActive = activationsRef.current[key][currentBeatRef.current];
+          if (isActive) {
             // if the key is of length 1, play for a duration of one beat
             if (key.length === 1) {
               const durationInSeconds = 60 / bpm / 4;
@@ -127,13 +128,13 @@ const SequenceGenerator = <
       });
     }
 
-    setInstruments(fullBeat);
+    setActivations(fullBeat);
   };
 
   const toggleBeat = (instrument: GeneratorKeys, index: number): void => {
-    const newInstruments = { ...instruments };
+    const newInstruments = { ...activations };
     newInstruments[instrument][index] = !newInstruments[instrument][index];
-    setInstruments(newInstruments);
+    setActivations(newInstruments);
   };
 
   return (
@@ -165,7 +166,7 @@ const SequenceGenerator = <
         Restart
       </button>
       <BeatGrid
-        instruments={instruments}
+        instruments={activations}
         currentBeat={currentBeat}
         toggleBeat={toggleBeat}
         totalNumberOfBeats={sectionLength * totalSections}
