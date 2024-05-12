@@ -2,7 +2,7 @@ import { FC } from 'react';
 import InstrumentRow from './InstrumentRow';
 
 interface GridProps {
-  instruments: {
+  activations: {
     [key: string]: boolean[];
   };
   currentBeat: number;
@@ -11,7 +11,7 @@ interface GridProps {
 }
 
 const Grid: FC<GridProps> = ({
-  instruments,
+  activations,
   currentBeat,
   toggleBeat,
   totalNumberOfBeats,
@@ -23,11 +23,11 @@ const Grid: FC<GridProps> = ({
 
   return (
     <div className="grid" style={{ gridTemplateColumns: gridColumnString }}>
-      {Object.keys(instruments).map((instrument) => (
+      {Object.keys(activations).map((instrument) => (
         <InstrumentRow
           key={instrument}
           instrumentName={instrument}
-          beats={instruments[instrument]}
+          beats={activations[instrument]}
           currentBeat={currentBeat}
           toggleBeat={toggleBeat}
         />

@@ -28,7 +28,7 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
     Bass: new Tone.Player(bassClip).toDestination(),
   },
   volumes: {
-    Crash: -15,
+    Crash: -18,
     'Hi-hat': -15,
     Snare: -15,
     Kick: -15,

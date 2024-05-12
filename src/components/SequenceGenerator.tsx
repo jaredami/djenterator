@@ -201,10 +201,10 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
       >
         Restart
       </button>
-      {activations.map((singleActivation, genIndex) => (
+      {activations.map((generatorActivations, genIndex) => (
         <BeatGrid
           key={genIndex}
-          instruments={singleActivation}
+          activations={generatorActivations}
           currentBeat={currentBeat}
           toggleBeat={(instrument, index) =>
             toggleBeat(genIndex, instrument, index)
