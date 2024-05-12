@@ -1,54 +1,63 @@
 import * as Tone from 'tone';
 import { Activations, Generator } from '../components/SequenceGenerator';
-import AClip from '../sounds/ga1.wav';
-import BClip from '../sounds/gb1.wav';
-import DClip from '../sounds/gd1.wav';
+import EClip from '../sounds/guitar/guitar-E.mp3';
+import DSharpClip from '../sounds/guitar/guitar-DSharp.mp3';
+import DClip from '../sounds/guitar/guitar-D.mp3';
+import CSharpClip from '../sounds/guitar/guitar-CSharp.mp3';
+import CClip from '../sounds/guitar/guitar-C.mp3';
+import BClip from '../sounds/guitar/guitar-B.mp3';
+import ASharpClip from '../sounds/guitar/guitar-ASharp.mp3';
+import AClip from '../sounds/guitar/guitar-A.mp3';
+import GSharpClip from '../sounds/guitar/guitar-GSharp.mp3';
+import GClip from '../sounds/guitar/guitar-G.mp3';
+import FSharpClip from '../sounds/guitar/guitar-FSharp.mp3';
+import FClip from '../sounds/guitar/guitar-F.mp3';
 
 export const GuitarGeneratorKeysArray = [
-  //   'E',
-  //   'D#',
+  'E',
+  'D#',
   'D',
-  //   'C#',
-  //   'C',
+  'C#',
+  'C',
   'B',
-  //   'A#',
+  'A#',
   'A',
-  //   'G#',
-  //   'G',
-  //   'F#',
-  //   'F',
+  'G#',
+  'G',
+  'F#',
+  'F',
 ] as const;
 
 export type GuitarGeneratorKeys = (typeof GuitarGeneratorKeysArray)[number];
 
 export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
   clips: {
-    //   'E': EClip,
-    //   'D#': DSharpClip,
+    E: new Tone.Player(EClip).toDestination(),
+    'D#': new Tone.Player(DSharpClip).toDestination(),
     D: new Tone.Player(DClip).toDestination(),
-    //   'C#': CSharpClip,
-    //   'C': CClip,
+    'C#': new Tone.Player(CSharpClip).toDestination(),
+    C: new Tone.Player(CClip).toDestination(),
     B: new Tone.Player(BClip).toDestination(),
-    //   'A#': ASharpClip,
+    'A#': new Tone.Player(ASharpClip).toDestination(),
     A: new Tone.Player(AClip).toDestination(),
-    //   'G#': GSharpClip,
-    //   'G': GClip,
-    //   'F#': FSharpClip,
-    //   'F': FClip,
+    'G#': new Tone.Player(GSharpClip).toDestination(),
+    G: new Tone.Player(GClip).toDestination(),
+    'F#': new Tone.Player(FSharpClip).toDestination(),
+    F: new Tone.Player(FClip).toDestination(),
   },
   volumes: {
-    // E: -15,
-    // 'D#': -15,
+    E: -150,
+    'D#': -150,
     D: -150,
-    // 'C#': -15,
-    // C: -15,
+    'C#': -150,
+    C: -150,
     B: -150,
-    // 'A#': -15,
+    'A#': -150,
     A: -150,
-    // 'G#': -15,
-    // G: -15,
-    // 'F#': -15,
-    // F: -15,
+    'G#': -150,
+    G: -150,
+    'F#': -150,
+    F: -150,
   },
   generateSection: (sectionLength) => {
     const section = Object.fromEntries(
@@ -83,9 +92,18 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
     };
 
     const durations: Record<GuitarGeneratorKeys, (number | null)[] | null> = {
+      E: generateInstrumentDurations(section.E),
+      'D#': generateInstrumentDurations(section['D#']),
       D: generateInstrumentDurations(section.D),
+      'C#': generateInstrumentDurations(section['C#']),
+      C: generateInstrumentDurations(section.C),
       B: generateInstrumentDurations(section.B),
+      'A#': generateInstrumentDurations(section['A#']),
       A: generateInstrumentDurations(section.A),
+      'G#': generateInstrumentDurations(section['G#']),
+      G: generateInstrumentDurations(section.G),
+      'F#': generateInstrumentDurations(section['F#']),
+      F: generateInstrumentDurations(section.F),
     };
 
     return durations;
