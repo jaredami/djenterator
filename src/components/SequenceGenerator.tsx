@@ -7,6 +7,7 @@ import { VolumeControl } from './VolumeControl';
 export type Generator<GeneratorKeys extends string> = {
   clips: Record<GeneratorKeys, Tone.Player>;
   volumes: Record<GeneratorKeys, number>;
+  offset?: number;
   generateSection: (sectionLength: number) => Activations<GeneratorKeys>;
   generateDurations?(
     section: Activations<GeneratorKeys>,
@@ -106,7 +107,7 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
 
                 generator.clips[instrumentName].start(
                   time,
-                  0,
+                  generator.offset ?? 0,
                   durationInSeconds,
                 );
               }

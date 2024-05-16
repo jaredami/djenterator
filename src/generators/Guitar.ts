@@ -30,6 +30,8 @@ export const GuitarGeneratorKeysArray = [
 
 export type GuitarGeneratorKeys = (typeof GuitarGeneratorKeysArray)[number];
 
+const volume = -7;
+
 export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
   clips: {
     // E: new Tone.Player(EClip).toDestination(),
@@ -46,19 +48,20 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
     F: new Tone.Player(FClip).toDestination(),
   },
   volumes: {
-    // E: -15,
-    'D#': -15,
-    // D: -15,
-    'C#': -15,
-    C: -15,
-    // B: -15,
-    'A#': -15,
-    // A: -15,
-    'G#': -15,
-    // G: -15,
-    // 'F#': -15,
-    F: -15,
+    // E: volume,
+    'D#': volume,
+    // D: volume,
+    'C#': volume,
+    C: volume,
+    // B: volume,
+    'A#': volume,
+    // A: volume,
+    'G#': volume,
+    // G: volume,
+    // 'F#': volume,
+    F: volume,
   },
+  offset: 0.05,
   generateSection: (sectionLength) => {
     const section = Object.fromEntries(
       GuitarGeneratorKeysArray.map((instrument) => [
