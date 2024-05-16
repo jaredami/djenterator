@@ -159,6 +159,18 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
     newInstruments[genIndex][instrument][index] =
       !newInstruments[genIndex][instrument][index];
     setActivations(newInstruments);
+
+    // Set the duration to 0.25 for the instrument at the toggled beat
+    const newDurations = [...durations];
+    if (instrument !== null) {
+      const gen = newDurations[genIndex];
+      if (gen) {
+        const instrumentObj = gen[instrument];
+        if (instrumentObj) {
+          instrumentObj[index] = 0.25;
+        }
+      }
+    }
   };
 
   return (
