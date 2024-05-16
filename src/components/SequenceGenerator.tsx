@@ -176,27 +176,6 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
 
   return (
     <div>
-      <div>
-        {generators.map((generator, genIndex) =>
-          Object.keys(generator.clips).map((instrument) => (
-            <VolumeControl
-              key={instrument}
-              label={instrument}
-              value={volumes[genIndex][instrument]}
-              onChange={(newVolume) =>
-                setVolumes((prevVolumes) => {
-                  const newVolumes = [...prevVolumes];
-                  newVolumes[genIndex] = {
-                    ...newVolumes[genIndex],
-                    [instrument]: newVolume,
-                  };
-                  return newVolumes;
-                })
-              }
-            />
-          )),
-        )}
-      </div>
       <div className="controls-container">
         <label className="control-label">BPM:</label>
         <input
@@ -228,6 +207,27 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
           totalNumberOfBeats={sectionLength * totalSections}
         />
       ))}
+      <div>
+        {generators.map((generator, genIndex) =>
+          Object.keys(generator.clips).map((instrument) => (
+            <VolumeControl
+              key={instrument}
+              label={instrument}
+              value={volumes[genIndex][instrument]}
+              onChange={(newVolume) =>
+                setVolumes((prevVolumes) => {
+                  const newVolumes = [...prevVolumes];
+                  newVolumes[genIndex] = {
+                    ...newVolumes[genIndex],
+                    [instrument]: newVolume,
+                  };
+                  return newVolumes;
+                })
+              }
+            />
+          )),
+        )}
+      </div>
     </div>
   );
 };
