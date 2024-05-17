@@ -195,7 +195,7 @@ const generateSectionPattern3 = (sectionLength: number) => {
   return section;
 };
 
-// Generate repeating sequences of random notes
+// Generate repeating sequence of random notes
 const generateSectionPattern4 = (sectionLength: number) => {
   const section = Object.fromEntries(
     GuitarGeneratorKeysArray.map((instrument) => [
@@ -209,7 +209,12 @@ const generateSectionPattern4 = (sectionLength: number) => {
     return ((index % length) + length) % length;
   }
 
-  for (let i = 0; i < sectionLength; i++) {
+  // Random sequence length between 3 and 10
+  let sequenceLength = Math.floor(Math.random() * 12) + 5;
+  sequenceLength = Math.min(sequenceLength, sectionLength); // Ensure sequence doesn't exceed section length
+
+  const sequence = [];
+  for (let j = 0; j < sequenceLength; j++) {
     // Random start index for sequence
     const randomIndex = Math.floor(
       Math.random() * GuitarGeneratorKeysArray.length,
@@ -220,7 +225,12 @@ const generateSectionPattern4 = (sectionLength: number) => {
       GuitarGeneratorKeysArray.length,
     );
 
-    section[GuitarGeneratorKeysArray[currentIndex]][i] = true;
+    sequence.push(GuitarGeneratorKeysArray[currentIndex]);
+  }
+
+  for (let i = 0; i < sectionLength; i++) {
+    const note = sequence[i % sequenceLength] as keyof typeof section;
+    section[note][i] = true;
   }
 
   return section;
