@@ -105,7 +105,7 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
   generateDurations: (section: Activations<DrumGeneratorKeys>) => {
     const guitarAndBassDurations = section.Guitar1.map((_, i) => {
       if (section.Guitar1[i] || section.Guitar2[i] || section.Bass[i]) {
-        return (Math.floor(Math.random() * 8) + 1) / 8;
+        return (Math.floor(Math.random() * 16) + 1) / 8;
       }
       return null;
     });
