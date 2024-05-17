@@ -6,7 +6,7 @@ export const VolumeControl: React.FC<{
   onChange: (newVolume: number) => void;
 }> = ({ label, value, onChange }) => (
   <div className="volume-control">
-    <label style={{ color: 'white' }}>{label}</label>
+    <label>{label}</label>
     <input
       type="range"
       min="-60"
@@ -14,5 +14,6 @@ export const VolumeControl: React.FC<{
       value={value}
       onChange={(e) => onChange(Number(e.target.value))}
     />
+    <div className="value">{value}</div>
   </div>
 );

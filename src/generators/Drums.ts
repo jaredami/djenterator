@@ -33,10 +33,10 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
   volumes: {
     Crash: -18,
     'Hi-hat': -15,
-    Snare: -15,
+    Snare: -12,
     Kick: -15,
-    Guitar1: -20,
-    Guitar2: -20,
+    Guitar1: -17,
+    Guitar2: -17,
     Bass: -18,
   },
   generateSection: (sectionLength: number) => {

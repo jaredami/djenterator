@@ -30,7 +30,7 @@ export const GuitarGeneratorKeysArray = [
 
 export type GuitarGeneratorKeys = (typeof GuitarGeneratorKeysArray)[number];
 
-const volume = -7;
+const volume = -10;
 
 export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
   clips: {
