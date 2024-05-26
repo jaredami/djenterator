@@ -14,7 +14,7 @@ import FSharpClip from '../sounds/guitar/gFSharp4.mp3';
 import FClip from '../sounds/guitar/gF4.mp3';
 
 export const GuitarGeneratorKeysArray = [
-  'E',
+  // 'E',
   // 'D#',
   // 'D',
   'C#',
@@ -34,7 +34,7 @@ const volume = -10;
 
 export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
   clips: {
-    E: new Tone.Player(EClip).toDestination(),
+    // E: new Tone.Player(EClip).toDestination(),
     // 'D#': new Tone.Player(DSharpClip).toDestination(),
     // D: new Tone.Player(DClip).toDestination(),
     'C#': new Tone.Player(CSharpClip).toDestination(),
@@ -48,7 +48,7 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
     F: new Tone.Player(FClip).toDestination(),
   },
   volumes: {
-    E: volume,
+    // E: volume,
     // 'D#': volume,
     // D: volume,
     'C#': volume,
@@ -73,7 +73,7 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
     };
 
     const durations: Record<GuitarGeneratorKeys, (number | null)[] | null> = {
-      E: generateInstrumentDurations(section.E),
+      // E: generateInstrumentDurations(section.E),
       // 'D#': generateInstrumentDurations(section['D#']),
       // D: generateInstrumentDurations(section.D),
       'C#': generateInstrumentDurations(section['C#']),
