@@ -28,7 +28,7 @@ const sectionLength = 32;
 const totalSections = 4;
 
 const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
-  const [bpm, setBPM] = useState<number>(100);
+  const [bpm, setBPM] = useState<number>(130);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentBeat, setCurrentBeat] = useState<number>(0);
 
