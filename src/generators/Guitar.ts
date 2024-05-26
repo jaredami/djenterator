@@ -13,6 +13,13 @@ import G4Clip from '../sounds/guitar/gG4.mp3';
 import FSharp4Clip from '../sounds/guitar/gFSharp4.mp3';
 import F4Clip from '../sounds/guitar/gF4.mp3';
 
+import CSharp1Clip from '../sounds/guitar/guitar-CSharp.mp3';
+import C1Clip from '../sounds/guitar/guitar-C.mp3';
+import ASharp1Clip from '../sounds/guitar/guitar-ASharp.mp3';
+import GSharp1Clip from '../sounds/guitar/guitar-GSharp.mp3';
+import G1Clip from '../sounds/guitar/guitar-G.mp3';
+import F1Clip from '../sounds/guitar/guitar-F.mp3';
+
 export const GuitarGeneratorKeysArray = [
   // 'E4',
   // 'D#4',
@@ -26,6 +33,13 @@ export const GuitarGeneratorKeysArray = [
   'G4',
   // 'F#4',
   'F4',
+  //=================
+  // 'CSharp1',
+  // 'C1',
+  // 'ASharp1',
+  // 'GSharp1',
+  // 'G1',
+  'F1',
 ] as const;
 
 export type GuitarGeneratorKeys = (typeof GuitarGeneratorKeysArray)[number];
@@ -46,6 +60,13 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
     G4: new Tone.Player(G4Clip).toDestination(),
     // 'F#4': new Tone.Player(FSharp4Clip).toDestination(),
     F4: new Tone.Player(F4Clip).toDestination(),
+    //=================
+    // CSharp1: new Tone.Player(CSharp1Clip).toDestination(),
+    // C1: new Tone.Player(C1Clip).toDestination(),
+    // ASharp1: new Tone.Player(ASharp1Clip).toDestination(),
+    // GSharp1: new Tone.Player(GSharp1Clip).toDestination(),
+    // G1: new Tone.Player(G1Clip).toDestination(),
+    F1: new Tone.Player(F1Clip).toDestination(),
   },
   volumes: {
     // E4: volume,
@@ -60,6 +81,13 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
     G4: volume,
     // 'F#4': volume,
     F4: volume,
+    //=================
+    // CSharp1: volume,
+    // C1: volume,
+    // ASharp1: volume,
+    // GSharp1: volume,
+    // G1: volume,
+    F1: volume,
   },
   offset: 0.05,
   generateSection: (sectionLength) => {
@@ -74,17 +102,24 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
 
     const durations: Record<GuitarGeneratorKeys, (number | null)[] | null> = {
       // E4: generateInstrumentDurations(section.E4),
-      // 'D#4': generateInstrumentDurations(section['D#'4]),
+      // 'D#4': generateInstrumentDurations(section.DSharp4),
       // D4: generateInstrumentDurations(section.D4),
-      CSharp4: generateInstrumentDurations(section['CSharp4']),
+      CSharp4: generateInstrumentDurations(section.CSharp4),
       C4: generateInstrumentDurations(section.C4),
       // B4: generateInstrumentDurations(section.B),
-      ASharp4: generateInstrumentDurations(section['ASharp4']),
+      ASharp4: generateInstrumentDurations(section.ASharp4),
       // A4: generateInstrumentDurations(section.A4),
-      GSharp4: generateInstrumentDurations(section['GSharp4']),
+      GSharp4: generateInstrumentDurations(section.GSharp4),
       G4: generateInstrumentDurations(section.G4),
-      // 'F#4': generateInstrumentDurations(section['F#4']),
+      // 'F#4': generateInstrumentDurations(section.FSharp4),
       F4: generateInstrumentDurations(section.F4),
+      //=================
+      // CSharp1: generateInstrumentDurations(section.CSharp1),
+      // C1: generateInstrumentDurations(section.C1),
+      // ASharp1: generateInstrumentDurations(section.ASharp1),
+      // GSharp1: generateInstrumentDurations(section.GSharp1),
+      // G1: generateInstrumentDurations(section.G1),
+      F1: generateInstrumentDurations(section.F1),
     };
 
     return durations;
