@@ -147,8 +147,16 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
       return generator.generateDurations?.(newActivations[index]) ?? {};
     });
 
+    restart();
     setActivations(newActivations);
     setDurations(songDurations);
+  };
+
+  const restart = (): void => {
+    setCurrentBeat(0);
+    Tone.Transport.stop();
+    Tone.Transport.cancel();
+    setIsPlaying(false);
   };
 
   const toggleBeat = (
@@ -179,16 +187,7 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
       <div className="controls-container">
         <button onClick={generateSong}>Generate Beat</button>
         <button onClick={playPause}>{isPlaying ? 'Pause' : 'Play'}</button>
-        <button
-          onClick={() => {
-            setCurrentBeat(0);
-            Tone.Transport.stop();
-            Tone.Transport.cancel();
-            setIsPlaying(false);
-          }}
-        >
-          Restart
-        </button>
+        <button onClick={restart}>Restart</button>
         <label className="control-label">BPM:</label>
         <input
           type="number"
