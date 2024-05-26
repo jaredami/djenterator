@@ -44,7 +44,7 @@ export const GuitarGeneratorKeysArray = [
 
 export type GuitarGeneratorKeys = (typeof GuitarGeneratorKeysArray)[number];
 
-const volume = -10;
+const volume = -8;
 
 export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
   clips: {
@@ -96,32 +96,18 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
   generateDurations: (section: Activations<GuitarGeneratorKeys>) => {
     // The durations for each instrument should all be 1 quarter note
     const oneBeat = 0.25; // 0.25 beats = 1 quarter note
-    const generateInstrumentDurations = (instrument: (boolean | null)[]) => {
-      return instrument.map((beat) => (beat ? oneBeat : null));
+    const generateInstrumentDurations = (note: (boolean | null)[]) => {
+      return note.map((beat) => (beat ? oneBeat : null));
     };
-
-    const durations: Record<GuitarGeneratorKeys, (number | null)[] | null> = {
-      // E4: generateInstrumentDurations(section.E4),
-      // 'D#4': generateInstrumentDurations(section.DSharp4),
-      // D4: generateInstrumentDurations(section.D4),
-      CSharp4: generateInstrumentDurations(section.CSharp4),
-      C4: generateInstrumentDurations(section.C4),
-      // B4: generateInstrumentDurations(section.B),
-      ASharp4: generateInstrumentDurations(section.ASharp4),
-      // A4: generateInstrumentDurations(section.A4),
-      GSharp4: generateInstrumentDurations(section.GSharp4),
-      G4: generateInstrumentDurations(section.G4),
-      // 'F#4': generateInstrumentDurations(section.FSharp4),
-      F4: generateInstrumentDurations(section.F4),
-      //=================
-      // CSharp1: generateInstrumentDurations(section.CSharp1),
-      // C1: generateInstrumentDurations(section.C1),
-      // ASharp1: generateInstrumentDurations(section.ASharp1),
-      // GSharp1: generateInstrumentDurations(section.GSharp1),
-      // G1: generateInstrumentDurations(section.G1),
-      F1: generateInstrumentDurations(section.F1),
-    };
-
+    const durations: Record<string, (number | null)[] | null> =
+      Object.fromEntries(
+        GuitarGeneratorKeysArray.map(
+          (note): [string, (number | null)[] | null] => [
+            note,
+            generateInstrumentDurations(section[note]),
+          ],
+        ),
+      );
     return durations;
   },
 };
