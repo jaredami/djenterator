@@ -45,6 +45,7 @@ export const GuitarGeneratorKeysArray = [
 export type GuitarGeneratorKeys = (typeof GuitarGeneratorKeysArray)[number];
 
 const volume = -8;
+const offset = 0.05;
 
 export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
   clips: {
@@ -89,7 +90,12 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
     // G1: volume,
     F1: volume,
   },
-  offset: 0.05,
+  offsets: {
+    // Apply offset to all keys
+    ...(Object.fromEntries(
+      GuitarGeneratorKeysArray.map((key) => [key, offset]),
+    ) as Record<GuitarGeneratorKeys, number>),
+  },
   generateSection: (sectionLength) => {
     return generateSectionPattern1(sectionLength);
   },
@@ -253,6 +259,30 @@ const generateSectionPattern4 = (sectionLength: number) => {
     const note = sequence[i % sequenceLength] as keyof typeof section;
     section[note][i] = true;
   }
+
+  return section;
+};
+
+const generateSectionPattern5 = (sectionLength: number) => {
+  // Activate random beats on one random note
+  const section = Object.fromEntries(
+    GuitarGeneratorKeysArray.map((instrument) => [
+      instrument,
+      Array(sectionLength).fill(false),
+    ]),
+  ) as Activations<GuitarGeneratorKeys>;
+
+  const randomIndex = Math.floor(
+    Math.random() * GuitarGeneratorKeysArray.length,
+  );
+
+  const note = GuitarGeneratorKeysArray[randomIndex];
+  for (let i = 0; i < sectionLength; i++) {
+    section[note][i] = Math.random() > 0.5;
+  }
+
+  // Always activate first beat
+  section[note][0] = true;
 
   return section;
 };
