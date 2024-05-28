@@ -70,6 +70,12 @@ input[type='number'] {
 .instrument-row {
   display: contents;
 
+  // Set default color
+  .label,
+  .beat.active {
+    background-color: $instrument-6-color;
+  }
+
   &:nth-child(1) .label,
   &:nth-child(1) .beat.active {
     background-color: $instrument-1-color;
