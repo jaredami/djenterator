@@ -11,6 +11,7 @@ export type Generator<GeneratorKeys extends string> = {
   generateSection: (sectionLength: number) => Activations<GeneratorKeys>;
   generateDurations?(
     section: Activations<GeneratorKeys>,
+    sectionLength: number,
   ): Record<GeneratorKeys, (number | null)[] | null>;
 };
 
@@ -144,7 +145,10 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
 
     // For each generator, call the generateDurations function if it exists to get the durations based on the activations
     const songDurations = generators.map((generator, index) => {
-      return generator.generateDurations?.(newActivations[index]) ?? {};
+      return (
+        generator.generateDurations?.(newActivations[index], sectionLength) ??
+        {}
+      );
     });
 
     restart();

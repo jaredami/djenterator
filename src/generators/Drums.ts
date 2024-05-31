@@ -148,7 +148,6 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
       // Randomly select a pattern and activate the beats for that pattern
       const selectedPattern =
         patterns[Math.floor(Math.random() * patterns.length)];
-      console.log('🚀 ~ selectedPattern:', selectedPattern);
 
       // 70% of the time, only activate every other index from the pattern for the Snare
       const skipSnareHits = Math.random() > 0.3;
@@ -177,17 +176,40 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
 
     return section;
   },
-  generateDurations: (section: Activations<DrumGeneratorKeys>) => {
-    const guitarAndBassDurations = section.Guitar1.map((_, i) => {
-      if (section.Guitar1[i] || section.Guitar2[i] || section.Bass[i]) {
-        // If this is the last note in the section, make it an eighth note
-        if (i === section.Guitar1.length - 1) {
-          return 0.125;
+  generateDurations: (
+    songActivations: Activations<DrumGeneratorKeys>,
+    sectionLength: number,
+  ) => {
+    const numberOfSections = songActivations.Guitar1.length / sectionLength;
+    const lastActiveBeatsOfSections: number[] = [];
+    for (let i = 0; i < numberOfSections; i++) {
+      const startOfSectionIndex = i * sectionLength;
+      const endOfSectionIndex = startOfSectionIndex + sectionLength;
+      const section = songActivations.Guitar1.slice(
+        startOfSectionIndex,
+        endOfSectionIndex,
+      );
+      const lastActiveBeatOfSection = section.reduce(
+        (acc, beat, i) => (beat ? i : acc),
+        0,
+      );
+      lastActiveBeatsOfSections.push(
+        lastActiveBeatOfSection + startOfSectionIndex,
+      );
+    }
+
+    const guitarAndBassDurations = songActivations.Guitar1.map((beat, i) => {
+      if (songActivations.Guitar1[i]) {
+        // If the beat is the last active beat of a section, set the duration to the remaining beats in the section
+        if (lastActiveBeatsOfSections.includes(i)) {
+          const remainingBeatsInSection = sectionLength - (i % sectionLength);
+          const maxDuration = remainingBeatsInSection / 4;
+          return maxDuration;
         }
 
-        // Randomly select a duration between 1/8 and 1/1
         return (Math.floor(Math.random() * 8) + 1) / 8;
       }
+
       return null;
     });
 
