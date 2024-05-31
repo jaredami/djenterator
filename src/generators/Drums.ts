@@ -93,7 +93,7 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
     > = {
       Crash: { patterns: [8, 32], always: [] },
       'Hi-hat': { patterns: [2, 3, 4], always: [] },
-      Snare: { patterns: [2, 3, 4], always: [] },
+      Snare: { patterns: [2, 3, 4, 8], always: [] },
       Kick: { patterns: [], always: [0] },
       Guitar1: { patterns: [], always: [], match: 'Kick' },
       Guitar2: { patterns: [], always: [], match: 'Kick' },
@@ -148,8 +148,23 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
       // Randomly select a pattern and activate the beats for that pattern
       const selectedPattern =
         patterns[Math.floor(Math.random() * patterns.length)];
+      console.log('🚀 ~ selectedPattern:', selectedPattern);
+
+      // 70% of the time, only activate every other index from the pattern for the Snare
+      const skipSnareHits = Math.random() > 0.3;
+      let previousSnareActivated = true;
       for (let i = 0; i < section[typedKey].length; i += selectedPattern) {
-        section[typedKey][i] = true;
+        if (skipSnareHits && typedKey === 'Snare') {
+          if (previousSnareActivated) {
+            previousSnareActivated = false;
+            continue;
+          } else {
+            previousSnareActivated = true;
+            section[typedKey][i] = true;
+          }
+        } else {
+          section[typedKey][i] = true;
+        }
       }
     }
 
