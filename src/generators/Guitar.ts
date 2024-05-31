@@ -123,7 +123,7 @@ const generateSectionPattern1 = (sectionLength: number) => {
   const section = Object.fromEntries(
     GuitarGeneratorKeysArray.map((instrument) => [
       instrument,
-      Array(32).fill(false),
+      Array(sectionLength).fill(false),
     ]),
   ) as Activations<GuitarGeneratorKeys>;
 
