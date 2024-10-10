@@ -7,13 +7,15 @@ export const VolumeControl: React.FC<{
 }> = ({ label, value, onChange }) => (
   <div className="volume-control">
     <label>{label}</label>
-    <input
-      type="range"
-      min="-60"
-      max="0"
-      value={value}
-      onChange={(e) => onChange(Number(e.target.value))}
-    />
+    <div className="volume-slider">
+      <input
+        type="range"
+        min="-60"
+        max="0"
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+    </div>
     <div className="value">{value}</div>
   </div>
 );
