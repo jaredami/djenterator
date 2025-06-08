@@ -6,12 +6,10 @@ import { GuitarGenerator, GuitarGeneratorKeysArray } from './generators/Guitar';
 
 const App: React.FC = () => {
   return (
-    <div>
       <SequenceGenerator
         generators={[DrumsGenerator, GuitarGenerator]}
         keys={[DrumGeneratorKeysArray, GuitarGeneratorKeysArray]}
       />
-    </div>
   );
 };
 
