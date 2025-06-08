@@ -241,7 +241,7 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
   const GridComponent = shouldUseVirtualizedGrid ? VirtualizedBeatGrid : BeatGrid;
 
   return (
-    <div>
+    <>
       <div className="controls-container">
         <button onClick={generateSong}>Generate Beat</button>
         <button onClick={playPause}>{isPlaying ? 'Pause' : 'Play'}</button>
@@ -262,7 +262,7 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
           totalNumberOfBeats={sectionLength * totalSections}
         />
       ))}
-      <div>
+      <>
         {volumeChangeHandlers.map((generatorHandlers, genIndex) =>
           generatorHandlers.map(({ instrument, handler }) => (
             <VolumeControl
@@ -273,8 +273,8 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
             />
           ))
         )}
-      </div>
-    </div>
+      </>
+    </>
   );
 };
 

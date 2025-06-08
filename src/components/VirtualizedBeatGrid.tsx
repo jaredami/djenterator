@@ -57,15 +57,15 @@ const VirtualizedBeatGrid: FC<VirtualizedBeatGridProps> = memo(({
   }, [toggleBeat]);
 
   const handleScroll = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const newOffset = Math.max(
-      0,
-      Math.min(
-        (totalNumberOfBeats - VISIBLE_BEATS) * (BEAT_WIDTH + 4),
-        scrollOffset + e.deltaX
-      )
-    );
-    setScrollOffset(newOffset);
+    const maxOffset = (totalNumberOfBeats - VISIBLE_BEATS) * (BEAT_WIDTH + 4);
+    const newOffset = Math.max(0, Math.min(maxOffset, scrollOffset + e.deltaX));
+
+    // Only prevent default if we're actually scrolling within bounds
+    if ((e.deltaX > 0 && scrollOffset < maxOffset) || (e.deltaX < 0 && scrollOffset > 0)) {
+      e.preventDefault();
+      e.stopPropagation();
+      setScrollOffset(newOffset);
+    }
   }, [scrollOffset, totalNumberOfBeats]);
 
   const instruments = Object.keys(activations);
