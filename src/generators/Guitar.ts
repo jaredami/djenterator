@@ -97,6 +97,16 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
     ) as Record<GuitarGeneratorKeys, number>),
   },
   generateSection: (sectionLength) => {
+    // 30% chance to generate an empty section with no beats activated
+    if (Math.random() < 0.3) {
+      return Object.fromEntries(
+        GuitarGeneratorKeysArray.map((instrument) => [
+          instrument,
+          Array(sectionLength).fill(false),
+        ]),
+      ) as Activations<GuitarGeneratorKeys>;
+    }
+
     return generateSectionPattern1(sectionLength);
   },
   generateDurations: (section: Activations<GuitarGeneratorKeys>) => {
@@ -123,7 +133,7 @@ const generateSectionPattern1 = (sectionLength: number) => {
   const section = Object.fromEntries(
     GuitarGeneratorKeysArray.map((instrument) => [
       instrument,
-      Array(32).fill(false),
+      Array(sectionLength).fill(false),
     ]),
   ) as Activations<GuitarGeneratorKeys>;
 

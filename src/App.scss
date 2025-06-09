@@ -64,11 +64,17 @@ input[type='number'] {
   color: #eef2f3;
   display: grid;
   gap: 4px;
-  margin: 2rem 0;
+  margin: 2rem 0 4rem;
 }
 
 .instrument-row {
   display: contents;
+
+  // Set default color
+  .label,
+  .beat.active {
+    background-color: $instrument-6-color;
+  }
 
   &:nth-child(1) .label,
   &:nth-child(1) .beat.active {

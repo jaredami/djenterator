@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, memo, useCallback } from 'react';
 import InstrumentRow from './InstrumentRow';
 
 interface GridProps {
@@ -10,7 +10,7 @@ interface GridProps {
   totalNumberOfBeats: number;
 }
 
-const Grid: FC<GridProps> = ({
+const Grid: FC<GridProps> = memo(({
   activations,
   currentBeat,
   toggleBeat,
@@ -21,6 +21,10 @@ const Grid: FC<GridProps> = ({
     ...Array(totalNumberOfBeats).fill('1fr'),
   ].join(' ');
 
+  const memoizedToggleBeat = useCallback((instrument: string, beat: number) => {
+    toggleBeat(instrument, beat);
+  }, [toggleBeat]);
+
   return (
     <div className="grid" style={{ gridTemplateColumns: gridColumnString }}>
       {Object.keys(activations).map((instrument) => (
@@ -29,11 +33,13 @@ const Grid: FC<GridProps> = ({
           instrumentName={instrument}
           beats={activations[instrument]}
           currentBeat={currentBeat}
-          toggleBeat={toggleBeat}
+          toggleBeat={memoizedToggleBeat}
         />
       ))}
     </div>
   );
-};
+});
+
+Grid.displayName = 'BeatGrid';
 
 export default Grid;

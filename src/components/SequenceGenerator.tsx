@@ -1,16 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import * as Tone from 'tone';
 import '../App.scss';
 import BeatGrid from './BeatGrid';
+import VirtualizedBeatGrid from './VirtualizedBeatGrid';
 import { VolumeControl } from './VolumeControl';
 
 export type Generator<GeneratorKeys extends string> = {
   clips: Record<GeneratorKeys, Tone.Player>;
   volumes: Record<GeneratorKeys, number>;
-  offset?: number;
+  offsets: Record<GeneratorKeys, number>;
   generateSection: (sectionLength: number) => Activations<GeneratorKeys>;
   generateDurations?(
     section: Activations<GeneratorKeys>,
+    sectionLength: number,
   ): Record<GeneratorKeys, (number | null)[] | null>;
 };
 
@@ -24,8 +26,8 @@ type SequenceGeneratorProps = {
   keys: readonly (readonly string[])[];
 };
 
-const sectionLength = 32;
-const totalSections = 4;
+const sectionLength = 32 * 4;
+const totalSections = 16;
 
 const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
   const [bpm, setBPM] = useState<number>(130);
@@ -76,20 +78,34 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
 
   const currentBeatRef = useRef(currentBeat);
   const activationsRef = useRef(activations);
+  const durationsRef = useRef(durations);
+
   useEffect(() => {
     currentBeatRef.current = currentBeat;
     activationsRef.current = activations;
-  }, [currentBeat, activations]);
+    durationsRef.current = durations;
+  }, [currentBeat, activations, durations]);
+
+  // Throttle current beat updates to reduce render frequency
+  const lastBeatUpdateRef = useRef(0);
+  const throttledSetCurrentBeat = useCallback((newBeat: number) => {
+    const now = Date.now();
+    if (now - lastBeatUpdateRef.current > 16) { // ~60fps limit
+      setCurrentBeat(newBeat);
+      lastBeatUpdateRef.current = now;
+    }
+  }, []);
 
   const playPause = useCallback(async (): Promise<void> => {
     if (!isPlaying) {
       await Tone.start();
       Tone.Transport.scheduleRepeat((time) => {
-        setCurrentBeat((prevBeat) => {
-          const newBeat = (prevBeat + 1) % (sectionLength * totalSections);
-          currentBeatRef.current = newBeat;
-          return newBeat;
-        });
+        const newBeat = (currentBeatRef.current + 1) % (sectionLength * totalSections);
+        currentBeatRef.current = newBeat;
+
+        // Throttle UI updates
+        throttledSetCurrentBeat(newBeat);
+
         generators.forEach((generator, genIndex) => {
           Object.keys(activationsRef.current[genIndex]).forEach(
             (instrumentName) => {
@@ -100,14 +116,14 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
               if (isActive) {
                 // If there is a duration for this instrument at this beat, use it to determine how long to play the clip
                 const durationInBeats =
-                  durations[genIndex][instrumentName]?.[currentBeatRef.current];
+                  durationsRef.current[genIndex][instrumentName]?.[currentBeatRef.current];
                 const durationInSeconds = durationInBeats
                   ? (60 / bpm) * durationInBeats
                   : undefined;
 
                 generator.clips[instrumentName].start(
                   time,
-                  generator.offset ?? 0,
+                  generator.offsets[instrumentName] ?? 0,
                   durationInSeconds,
                 );
               }
@@ -121,9 +137,9 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
       Tone.Transport.stop();
     }
     setIsPlaying(!isPlaying);
-  }, [isPlaying, generators, bpm, durations]);
+  }, [isPlaying, generators, bpm, throttledSetCurrentBeat]);
 
-  const generateSong = (): void => {
+  const generateSong = useCallback((): void => {
     const newActivations = generators.map((generator, genIndex) => {
       const fullBeat = Object.fromEntries(
         keys[genIndex].map((instrument) => [instrument, []]),
@@ -144,46 +160,88 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
 
     // For each generator, call the generateDurations function if it exists to get the durations based on the activations
     const songDurations = generators.map((generator, index) => {
-      return generator.generateDurations?.(newActivations[index]) ?? {};
+      return (
+        generator.generateDurations?.(newActivations[index], sectionLength) ??
+        {}
+      );
     });
 
     restart();
     setActivations(newActivations);
     setDurations(songDurations);
-  };
+  }, [generators, keys]);
 
-  const restart = (): void => {
+  const restart = useCallback((): void => {
     setCurrentBeat(0);
     Tone.Transport.stop();
     Tone.Transport.cancel();
     setIsPlaying(false);
-  };
+  }, []);
 
-  const toggleBeat = (
+  const toggleBeat = useCallback((
     genIndex: number,
     instrument: string,
     index: number,
   ): void => {
-    const newInstruments = [...activations];
-    newInstruments[genIndex][instrument][index] =
-      !newInstruments[genIndex][instrument][index];
-    setActivations(newInstruments);
+    setActivations(prevActivations => {
+      const newInstruments = [...prevActivations];
+      newInstruments[genIndex] = {
+        ...newInstruments[genIndex],
+        [instrument]: [...newInstruments[genIndex][instrument]]
+      };
+      newInstruments[genIndex][instrument][index] =
+        !newInstruments[genIndex][instrument][index];
+      return newInstruments;
+    });
 
     // Set the duration to 0.25 for the instrument at the toggled beat
-    const newDurations = [...durations];
-    if (instrument !== null) {
-      const gen = newDurations[genIndex];
-      if (gen) {
-        const instrumentObj = gen[instrument];
-        if (instrumentObj) {
-          instrumentObj[index] = 0.25;
+    setDurations(prevDurations => {
+      const newDurations = [...prevDurations];
+      if (instrument !== null) {
+        const gen = { ...newDurations[genIndex] };
+        if (gen) {
+          const instrumentObj = gen[instrument] ? [...gen[instrument]!] : [];
+          if (instrumentObj) {
+            instrumentObj[index] = 0.25;
+            gen[instrument] = instrumentObj;
+          }
         }
+        newDurations[genIndex] = gen;
       }
-    }
-  };
+      return newDurations;
+    });
+  }, []);
+
+  const beatGridToggleFunctions = useMemo(() => {
+    return generators.map((_, genIndex) =>
+      (instrument: string, index: number) => toggleBeat(genIndex, instrument, index)
+    );
+  }, [toggleBeat, generators]);
+
+  const volumeChangeHandlers = useMemo(() => {
+    return generators.map((generator, genIndex) =>
+      Object.keys(generator.clips).map((instrument) => ({
+        instrument,
+        handler: (newVolume: number) => {
+          setVolumes((prevVolumes) => {
+            const newVolumes = [...prevVolumes];
+            newVolumes[genIndex] = {
+              ...newVolumes[genIndex],
+              [instrument]: newVolume,
+            };
+            return newVolumes;
+          });
+        }
+      }))
+    );
+  }, [generators]);
+
+  // Use virtualized grid for large sequences
+  const shouldUseVirtualizedGrid = (sectionLength * totalSections) > 512;
+  const GridComponent = shouldUseVirtualizedGrid ? VirtualizedBeatGrid : BeatGrid;
 
   return (
-    <div>
+    <>
       <div className="controls-container">
         <button onClick={generateSong}>Generate Beat</button>
         <button onClick={playPause}>{isPlaying ? 'Pause' : 'Play'}</button>
@@ -196,38 +254,27 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
         />
       </div>
       {activations.map((generatorActivations, genIndex) => (
-        <BeatGrid
+        <GridComponent
           key={genIndex}
           activations={generatorActivations}
           currentBeat={currentBeat}
-          toggleBeat={(instrument, index) =>
-            toggleBeat(genIndex, instrument, index)
-          }
+          toggleBeat={beatGridToggleFunctions[genIndex]}
           totalNumberOfBeats={sectionLength * totalSections}
         />
       ))}
-      <div>
-        {generators.map((generator, genIndex) =>
-          Object.keys(generator.clips).map((instrument) => (
+      <>
+        {volumeChangeHandlers.map((generatorHandlers, genIndex) =>
+          generatorHandlers.map(({ instrument, handler }) => (
             <VolumeControl
-              key={instrument}
+              key={`${genIndex}-${instrument}`}
               label={instrument}
               value={volumes[genIndex][instrument]}
-              onChange={(newVolume) =>
-                setVolumes((prevVolumes) => {
-                  const newVolumes = [...prevVolumes];
-                  newVolumes[genIndex] = {
-                    ...newVolumes[genIndex],
-                    [instrument]: newVolume,
-                  };
-                  return newVolumes;
-                })
-              }
+              onChange={handler}
             />
-          )),
+          ))
         )}
-      </div>
-    </div>
+      </>
+    </>
   );
 };
 
