@@ -26,8 +26,8 @@ type SequenceGeneratorProps = {
   keys: readonly (readonly string[])[];
 };
 
-const sectionLength = 32;
-const totalSections = 16 * 4;
+const sectionLength = 32 * 4;
+const totalSections = 16;
 
 const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
   const [bpm, setBPM] = useState<number>(130);

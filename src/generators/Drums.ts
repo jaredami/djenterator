@@ -167,12 +167,21 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
       }
     }
 
-    // Pick one of the keys with a pattern of null and copy the pattern from the Kick into that key
+    // Switch guitar notes randomly every 1/4 portion of the section
     const nullKeys = DrumGeneratorKeysArray.filter(
       (key) => patternsMap[key] === null,
     );
-    const randomNullKey = nullKeys[Math.floor(Math.random() * nullKeys.length)];
-    section[randomNullKey] = section.Kick;
+    const quarterLength = Math.floor(sectionLength / 4);
+
+    for (let quarter = 0; quarter < 4; quarter++) {
+      const startIndex = quarter * quarterLength;
+      const endIndex = quarter === 3 ? sectionLength : (quarter + 1) * quarterLength;
+      const randomNullKey = nullKeys[Math.floor(Math.random() * nullKeys.length)];
+
+      for (let i = startIndex; i < endIndex; i++) {
+        section[randomNullKey][i] = section.Kick[i];
+      }
+    }
 
     return section;
   },
