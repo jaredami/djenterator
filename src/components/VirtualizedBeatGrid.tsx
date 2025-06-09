@@ -117,10 +117,10 @@ const VirtualizedBeatGrid: FC<VirtualizedBeatGridProps> = memo(({
         className="scroll-indicator"
         style={{
           position: 'absolute',
-          bottom: '-20px',
+          bottom: '-28px',
           left: '104px', // Align with the beat columns (label width + gap)
           right: '0',
-          height: '4px',
+          height: '16px',
           backgroundColor: '#352f2f',
           borderRadius: '2px',
           margin: '0 4px'
@@ -142,7 +142,7 @@ const VirtualizedBeatGrid: FC<VirtualizedBeatGridProps> = memo(({
       <div
         style={{
           position: 'absolute',
-          bottom: '-40px',
+          bottom: '-48px',
           left: '104px',
           color: '#f5f5f5',
           fontSize: '12px',
