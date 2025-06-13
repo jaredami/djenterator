@@ -209,14 +209,24 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
 
     const guitarAndBassDurations = songActivations.Guitar1.map((beat, i) => {
       if (songActivations.Guitar1[i]) {
-        // If the beat is the last active beat of a section, set the duration to the remaining beats in the section
+        // If this is the last active beat of a section, set duration to remaining beats
         if (lastActiveBeatsOfSections.includes(i)) {
           const remainingBeatsInSection = sectionLength - (i % sectionLength);
           const maxDuration = remainingBeatsInSection / 4;
           return maxDuration;
         }
 
-        return (Math.floor(Math.random() * 8) + 1) / 8;
+        // Calculate which quarter of the section this beat belongs to
+        const quarterLength = Math.floor(sectionLength / 4);
+        const currentQuarter = Math.floor((i % sectionLength) / quarterLength);
+        const nextQuarterStart = (currentQuarter + 1) * quarterLength;
+        const beatsUntilNextQuarter = nextQuarterStart - (i % sectionLength);
+
+        // Calculate maximum duration that won't overlap with next quarter
+        const maxDuration = beatsUntilNextQuarter / 4;
+        // Generate a random duration that's shorter than the maximum
+        const randomDuration = (Math.floor(Math.random() * (maxDuration * 8)) + 1) / 8;
+        return Math.min(randomDuration, maxDuration);
       }
 
       return null;
