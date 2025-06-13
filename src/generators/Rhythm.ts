@@ -16,7 +16,7 @@ import GSharp1Clip from '../sounds/guitar/guitar-GSharp.mp3';
 import G1Clip from '../sounds/guitar/guitar-G.mp3';
 import F1Clip from '../sounds/guitar/guitar-F.mp3';
 
-export const DrumGeneratorKeysArray = [
+export const RhythmGeneratorKeysArray = [
   'Crash',
   'Hi-hat',
   'Snare',
@@ -32,11 +32,11 @@ export const DrumGeneratorKeysArray = [
   'F1',
 ] as const;
 
-export type DrumGeneratorKeys = (typeof DrumGeneratorKeysArray)[number];
+export type RhythmGeneratorKeys = (typeof RhythmGeneratorKeysArray)[number];
 
 const guitarNoteVolume = -5;
 
-export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
+export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
   clips: {
     Crash: new Tone.Player(crashClip).toDestination(),
     'Hi-hat': new Tone.Player(hatOpenClip).toDestination(),
@@ -84,11 +84,11 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
   },
   generateSection: (sectionLength: number) => {
     const patternsMap: Record<
-      DrumGeneratorKeys,
+      RhythmGeneratorKeys,
       {
         patterns: number[];
         always: number[];
-        match?: DrumGeneratorKeys;
+        match?: RhythmGeneratorKeys;
       } | null
     > = {
       Crash: { patterns: [8, 32], always: [] },
@@ -106,14 +106,14 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
       F1: null,
     };
 
-    const section: Activations<DrumGeneratorKeys> = Object.fromEntries(
-      DrumGeneratorKeysArray.map(
-        (instrument): [DrumGeneratorKeys, boolean[]] => [
+    const section: Activations<RhythmGeneratorKeys> = Object.fromEntries(
+      RhythmGeneratorKeysArray.map(
+        (instrument): [RhythmGeneratorKeys, boolean[]] => [
           instrument,
           Array(sectionLength).fill(false),
         ],
       ),
-    ) as Activations<DrumGeneratorKeys>;
+    ) as Activations<RhythmGeneratorKeys>;
 
     for (const [key, value] of Object.entries(patternsMap)) {
       if (!value) {
@@ -123,7 +123,7 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
       const { patterns, always, match } = value;
 
       // Get the instrument name as a key of the Instruments type
-      const typedKey = key as DrumGeneratorKeys;
+      const typedKey = key as RhythmGeneratorKeys;
 
       if (match) {
         section[typedKey] = section[match];
@@ -168,7 +168,7 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
     }
 
     // Switch guitar notes randomly every 1/4 portion of the section
-    const nullKeys = DrumGeneratorKeysArray.filter(
+    const nullKeys = RhythmGeneratorKeysArray.filter(
       (key) => patternsMap[key] === null,
     );
     const quarterLength = Math.floor(sectionLength / 4);
@@ -186,7 +186,7 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
     return section;
   },
   generateDurations: (
-    songActivations: Activations<DrumGeneratorKeys>,
+    songActivations: Activations<RhythmGeneratorKeys>,
     sectionLength: number,
   ) => {
     const numberOfSections = songActivations.Guitar1.length / sectionLength;
@@ -232,7 +232,7 @@ export const DrumsGenerator: Generator<DrumGeneratorKeys> = {
       return null;
     });
 
-    const durations: Record<DrumGeneratorKeys, (number | null)[] | null> = {
+    const durations: Record<RhythmGeneratorKeys, (number | null)[] | null> = {
       Crash: null,
       'Hi-hat': null,
       Snare: null,
@@ -263,5 +263,5 @@ guitar1.connect(panLeft);
 guitar2.connect(panRight);
 
 // Add guitars to the generator
-DrumsGenerator.clips.Guitar1 = guitar1;
-DrumsGenerator.clips.Guitar2 = guitar2;
+RhythmGenerator.clips.Guitar1 = guitar1;
+RhythmGenerator.clips.Guitar2 = guitar2;

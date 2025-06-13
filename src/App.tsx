@@ -1,14 +1,14 @@
 import React from 'react';
 import './App.scss';
 import SequenceGenerator from './components/SequenceGenerator';
-import { DrumGeneratorKeysArray, DrumsGenerator } from './generators/Drums';
+import { RhythmGeneratorKeysArray, RhythmGenerator } from './generators/Rhythm';
 import { GuitarGenerator, GuitarGeneratorKeysArray } from './generators/Guitar';
 
 const App: React.FC = () => {
   return (
       <SequenceGenerator
-        generators={[DrumsGenerator, GuitarGenerator]}
-        keys={[DrumGeneratorKeysArray, GuitarGeneratorKeysArray]}
+        generators={[RhythmGenerator, GuitarGenerator]}
+        keys={[RhythmGeneratorKeysArray, GuitarGeneratorKeysArray]}
       />
   );
 };
