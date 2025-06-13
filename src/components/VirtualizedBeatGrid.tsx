@@ -118,10 +118,10 @@ const VirtualizedBeatGrid: FC<VirtualizedBeatGridProps> = memo(({
         style={{
           position: 'absolute',
           bottom: '-28px',
-          left: '104px', // Align with the beat columns (label width + gap)
+          left: '120px', // Align with the beat columns (label width + gap)
           right: '0',
           height: '16px',
-          backgroundColor: '#352f2f',
+          backgroundColor: 'rgba(51, 65, 85, 0.6)',
           borderRadius: '2px',
           margin: '0 4px'
         }}
@@ -129,7 +129,7 @@ const VirtualizedBeatGrid: FC<VirtualizedBeatGridProps> = memo(({
         <div
           style={{
             height: '100%',
-            backgroundColor: '#a8e6cf',
+            backgroundColor: '#22c55e',
             borderRadius: '2px',
             width: `${Math.min(100, (visibleBeats / totalNumberOfBeats) * 100)}%`,
             marginLeft: `${(startBeat / totalNumberOfBeats) * 100}%`,
@@ -143,7 +143,7 @@ const VirtualizedBeatGrid: FC<VirtualizedBeatGridProps> = memo(({
         style={{
           position: 'absolute',
           bottom: '-48px',
-          left: '104px',
+          left: '120px',
           color: '#f5f5f5',
           fontSize: '12px',
           opacity: 0.7

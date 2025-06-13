@@ -1,70 +1,164 @@
-$instrument-1-color: #de5b7b;
-$instrument-2-color: #ff8b94;
-$instrument-3-color: #ffaaa5;
-$instrument-4-color: #ffd3b6;
-$instrument-5-color: #dcedc1;
-$instrument-6-color: #a8e6cf;
-$instrument-7-color: #ffd4e5;
-$instrument-8-color: #eecbff;
+// Modern color palette with improved contrast and accessibility
+$primary-color: #3b82f6;
+$primary-hover: #2563eb;
+$accent-color: #8b5cf6;
+$success-color: #10b981;
+$warning-color: #f59e0b;
+$danger-color: #ef4444;
+
+// Instrument colors - more vibrant and modern
+$instrument-1-color: #ef4444; // Red
+$instrument-2-color: #f97316; // Orange
+$instrument-3-color: #eab308; // Amber
+$instrument-4-color: #22c55e; // Green
+$instrument-5-color: #06b6d4; // Cyan
+$instrument-6-color: #3b82f6; // Blue
+$instrument-7-color: #8b5cf6; // Purple
+$instrument-8-color: #ec4899; // Pink
+
+// Typography and spacing
+$border-radius-sm: 6px;
+$border-radius-md: 8px;
+$border-radius-lg: 12px;
+
+body {
+  background: #0f172a;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: 'Fira Sans', sans-serif;
+  font-weight: 400;
+  color: #f8fafc;
+  overflow-x: auto;
+}
 
 #root {
   margin: 0 auto;
-  padding: 1rem;
-  text-align: center;
+  padding: 2rem;
+  max-width: 1400px;
+  min-height: 100vh;
 }
 
-body {
-  background-color: #070707;
-  height: 100vh;
-  transition: all 300ms;
+// Header section
+.app-header {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: #3b82f6;
+    color: #8b5cf6
+  }
+
+  p {
+    font-size: 1.125rem;
+    color: #94a3b8;
+    margin: 0;
+  }
 }
 
 .controls-container {
   display: flex;
   align-items: center;
+  justify-content: center;
+  gap: 1rem;
   margin: 0 0 2rem 0;
+  padding: 1.5rem;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: $border-radius-lg;
+  flex-wrap: wrap;
 }
 
 button {
-  padding: 10px 20px;
+  padding: 0.75rem 1.5rem;
   font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
-  margin-right: 1rem;
-  border-radius: 4px;
-  border: 0;
-  background: #070707;
-  border: 1px solid #f5f5f5;
-  color: #f5f5f5;
-  transition: all 100ms;
+  border-radius: $border-radius-md;
+  border: none;
+  background: $primary-color;
+  color: white;
+  transition: background-color 0.15s ease;
 
   &:hover {
-    background: #f5f5f5;
-    color: #070707;
+    background: $primary-hover;
+  }
+
+  // Play button special styling
+  &:nth-child(2) {
+    background: $success-color;
+
+    &:hover {
+      background: #059669;
+    }
+  }
+
+  // Generate button special styling
+  &:first-child {
+    background: $accent-color;
+
+    &:hover {
+      background: #7c3aed;
+    }
+  }
+
+  // Restart button special styling
+  &:nth-child(3) {
+    background: $warning-color;
+
+    &:hover {
+      background: #d97706;
+    }
   }
 }
 
 .control-label {
-  color: #f5f5f5;
-  margin-right: 0.5rem;
+  color: #e2e8f0;
+  font-weight: 500;
+  font-size: 1rem;
 }
 
 input[type='number'] {
-  width: 60px;
-  margin-right: 1rem;
-  padding: 0.5rem;
+  width: 80px;
+  padding: 0.75rem;
   font-size: 1rem;
-  border-radius: 4px;
-  border: 1px solid #f5f5f5;
-  background: #f5f5f5;
-  color: #070707;
+  font-weight: 500;
+  border-radius: $border-radius-md;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  background: rgba(15, 23, 42, 0.9);
+  color: #f8fafc;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+  }
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+.grid-container {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  padding-bottom: 3rem;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: $border-radius-lg;
 }
 
 .grid {
-  border-radius: 4px;
-  color: #eef2f3;
+  border-radius: $border-radius-md;
+  color: #f8fafc;
   display: grid;
-  gap: 4px;
-  margin: 2rem 0 4rem;
+  gap: 6px;
+  margin: 1rem 0;
 }
 
 .instrument-row {
@@ -118,42 +212,69 @@ input[type='number'] {
 }
 
 .label {
-  background-color: #cccccc;
-  border-radius: 4px;
-  color: #070707;
-  padding: 10px;
+  background: rgba(71, 85, 105, 0.8);
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  border-radius: $border-radius-md;
+  color: #f8fafc;
+  padding: 0.5rem;
   text-align: center;
-  width: 100px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  width: 120px;
 }
 
 .beat {
-  background-color: #352f2f;
-  border-radius: 4px;
-  transition: all 300ms;
-  width: 14px;
+  background: rgba(51, 65, 85, 0.6);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: $border-radius-sm;
+  transition: background-color 0.1s ease;
+  width: 16px;
+  height: 100%;
 
   &.active {
-    background-color: #000000;
-    filter: brightness(130%);
-    transform: scale(0.9);
+    filter: brightness(110%);
   }
 
   &.current {
-    filter: brightness(150%);
+    filter: brightness(140%);
   }
 
   &:hover {
     cursor: pointer;
-    filter: brightness(130%);
+    filter: brightness(120%);
   }
 
   &:focus {
     outline: none;
+    border-color: rgba(59, 130, 246, 0.8);
   }
 }
 
 .col-dark > * {
-  background-color: #222121;
+  background: rgba(71, 85, 105, 0.4);
+}
+
+// Volume controls section
+.volume-controls-container {
+  margin-top: 3rem;
+  padding: 1.5rem;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: $border-radius-lg;
+
+  h3 {
+    color: #e2e8f0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+  }
+
+  .volume-controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+  }
 }
 
 #instrumentVolumeContainer {

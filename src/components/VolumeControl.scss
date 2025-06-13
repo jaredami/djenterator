@@ -1,72 +1,115 @@
+// Volume control styling with optimized performance
 .volume-control {
-  width: 200px;
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  color: #f5f5f5;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(51, 65, 85, 0.6);
+  border: 1px solid rgba(71, 85, 105, 0.4);
+  border-radius: 8px;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: rgba(51, 65, 85, 0.8);
+    border-color: rgba(71, 85, 105, 0.6);
+  }
 
   label {
-    width: 60px;
-    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #e2e8f0;
+    text-align: center;
+    margin: 0;
+    text-transform: capitalize;
   }
 
-  input {
-    width: 100px;
-  }
+  .volume-slider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
 
-  .value {
-    width: 2rem;
-  }
-}
-
-.volume-slider {
-  // Container styles
-  position: relative;
-  width: 100px;
-  display: flex;
-  align-items: center;
-
-  // Base input styles
-  input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 4px;
-    background: transparent;
-    border-radius: 2px;
-    outline: none;
-
-    // WebKit specific styles
-    &::-webkit-slider-thumb {
+    // Optimized range input styling
+    input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
-      width: 16px;
-      height: 16px;
-      background: #a8e6cf;
-      border-radius: 50%;
-      cursor: pointer;
-      margin-top: -6px; // Center thumb vertically
-      transition: all 0.2s ease;
+      flex: 1;
+      height: 6px;
+      background: rgba(71, 85, 105, 0.8);
+      border-radius: 3px;
+      outline: none;
 
-      &:hover {
-        background: darken(#a8e6cf, 10%);
+      // Simplified thumb styling
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        background: #3b82f6;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid #f8fafc;
+        transition: background-color 0.15s ease;
+
+        &:hover {
+          background: #2563eb;
+        }
       }
 
-      &:active {
-        transform: scale(1.1);
+      &::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        background: #3b82f6;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid #f8fafc;
+        transition: background-color 0.15s ease;
+
+        &:hover {
+          background: #2563eb;
+        }
+      }
+
+      // Simplified track styling
+      &::-webkit-slider-track {
+        width: 100%;
+        height: 6px;
+        background: rgba(71, 85, 105, 0.8);
+        border-radius: 3px;
+        border: none;
+      }
+
+      &::-moz-range-track {
+        width: 100%;
+        height: 6px;
+        background: rgba(71, 85, 105, 0.8);
+        border-radius: 3px;
+        border: none;
+      }
+
+      // Focus styling
+      &:focus {
+        &::-webkit-slider-thumb {
+          outline: 2px solid rgba(59, 130, 246, 0.5);
+        }
+
+        &::-moz-range-thumb {
+          outline: 2px solid rgba(59, 130, 246, 0.5);
+        }
       }
     }
 
-    &::-webkit-slider-runnable-track {
-      width: 100%;
-      height: 4px;
-      background: #333;
-      border-radius: 2px;
-
-      // Create a pseudo-track for the filled part
-      background-image: linear-gradient(#4CAF50, #4CAF50);
-      background-size: var(--range-progress, 0%) 100%;
-      background-repeat: no-repeat;
+    .value {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #94a3b8;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid rgba(71, 85, 105, 0.3);
+      min-width: 2.5rem;
+      text-align: center;
+      font-family: 'Roboto Condensed', monospace;
     }
   }
 }

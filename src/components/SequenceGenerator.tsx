@@ -242,6 +242,11 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
 
   return (
     <>
+      <div className="app-header">
+        <h1>Djenterator</h1>
+        <p>Generate and customize progressive metal beats</p>
+      </div>
+
       <div className="controls-container">
         <button onClick={generateSong}>Generate Beat</button>
         <button onClick={playPause}>{isPlaying ? 'Pause' : 'Play'}</button>
@@ -253,27 +258,33 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
           onChange={(e) => setBPM(Number(e.target.value))}
         />
       </div>
+
       {activations.map((generatorActivations, genIndex) => (
-        <GridComponent
-          key={genIndex}
-          activations={generatorActivations}
-          currentBeat={currentBeat}
-          toggleBeat={beatGridToggleFunctions[genIndex]}
-          totalNumberOfBeats={sectionLength * totalSections}
-        />
+        <div key={genIndex} className="grid-container">
+          <GridComponent
+            activations={generatorActivations}
+            currentBeat={currentBeat}
+            toggleBeat={beatGridToggleFunctions[genIndex]}
+            totalNumberOfBeats={sectionLength * totalSections}
+          />
+        </div>
       ))}
-      <>
-        {volumeChangeHandlers.map((generatorHandlers, genIndex) =>
-          generatorHandlers.map(({ instrument, handler }) => (
-            <VolumeControl
-              key={`${genIndex}-${instrument}`}
-              label={instrument}
-              value={volumes[genIndex][instrument]}
-              onChange={handler}
-            />
-          ))
-        )}
-      </>
+
+      <div className="volume-controls-container">
+        <h3>Volume Controls</h3>
+        <div className="volume-controls-grid">
+          {volumeChangeHandlers.map((generatorHandlers, genIndex) =>
+            generatorHandlers.map(({ instrument, handler }) => (
+              <VolumeControl
+                key={`${genIndex}-${instrument}`}
+                label={instrument}
+                value={volumes[genIndex][instrument]}
+                onChange={handler}
+              />
+            ))
+          )}
+        </div>
+      </div>
     </>
   );
 };
