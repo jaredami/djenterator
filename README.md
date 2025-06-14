@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/290a7ec1-3b98-48c0-8b35-e34e02480273)
+![image](https://github.com/user-attachments/assets/d50de253-d4ba-435b-9d6e-1f6dc4a3bfe5)
 
 # React + TypeScript + Vite
 
