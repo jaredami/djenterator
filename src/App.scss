@@ -282,3 +282,83 @@ input[type='number'] {
   width: 10%;
   float: left;
 }
+
+.song-structure-display {
+  margin: 20px 0;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+
+  h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.2rem;
+  }
+}
+
+.section-indicators {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.section-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid transparent;
+  border-radius: 6px;
+  min-width: 80px;
+  transition: all 0.3s ease;
+
+  &.active {
+    border-color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.2);
+    transform: scale(1.05);
+  }
+
+  .section-type {
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-transform: capitalize;
+    margin-bottom: 2px;
+  }
+
+  .section-time-sig {
+    font-size: 0.8rem;
+    color: #f5f5f5;
+    font-family: 'Courier New', monospace;
+  }
+
+  .section-dynamics {
+    font-size: 0.75rem;
+    font-style: italic;
+    margin-top: 2px;
+  }
+}
+
+// Responsive design for section indicators
+@media (max-width: 768px) {
+  .section-indicators {
+    justify-content: center;
+  }
+
+  .section-indicator {
+    min-width: 70px;
+    padding: 6px 10px;
+
+    .section-type {
+      font-size: 0.8rem;
+    }
+
+    .section-time-sig {
+      font-size: 0.7rem;
+    }
+
+    .section-dynamics {
+      font-size: 0.65rem;
+    }
+  }
+}

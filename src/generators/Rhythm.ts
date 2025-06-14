@@ -42,15 +42,15 @@ export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
     'Hi-hat': new Tone.Player(hatOpenClip).toDestination(),
     Snare: new Tone.Player(snareClip).toDestination(),
     Kick: new Tone.Player(kickClip).toDestination(),
-    Guitar1: new Tone.Player(guitar1Clip).toDestination(),
-    Guitar2: new Tone.Player(guitar2Clip).toDestination(),
-    Bass: new Tone.Player(bassClip).toDestination(),
-    CSharp1: new Tone.Player(CSharp1Clip).toDestination(),
-    C1: new Tone.Player(C1Clip).toDestination(),
-    ASharp1: new Tone.Player(ASharp1Clip).toDestination(),
-    GSharp1: new Tone.Player(GSharp1Clip).toDestination(),
-    G1: new Tone.Player(G1Clip).toDestination(),
-    F1: new Tone.Player(F1Clip).toDestination(),
+    Guitar1: new Tone.Player({ url: guitar1Clip, fadeOut: 0.01 }).toDestination(),
+    Guitar2: new Tone.Player({ url: guitar2Clip, fadeOut: 0.01 }).toDestination(),
+    Bass: new Tone.Player({ url: bassClip, fadeOut: 0.01 }).toDestination(),
+    CSharp1: new Tone.Player({ url: CSharp1Clip, fadeOut: 0.01 }).toDestination(),
+    C1: new Tone.Player({ url: C1Clip, fadeOut: 0.01 }).toDestination(),
+    ASharp1: new Tone.Player({ url: ASharp1Clip, fadeOut: 0.01 }).toDestination(),
+    GSharp1: new Tone.Player({ url: GSharp1Clip, fadeOut: 0.01 }).toDestination(),
+    G1: new Tone.Player({ url: G1Clip, fadeOut: 0.01 }).toDestination(),
+    F1: new Tone.Player({ url: F1Clip, fadeOut: 0.01 }).toDestination(),
   },
   volumes: {
     Crash: -18,
@@ -82,19 +82,40 @@ export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
     G1: 0.05,
     F1: 0.05,
   },
-  generateSection: (sectionLength: number) => {
+  generateSection: (sectionLength: number, characteristics?) => {
     const patternsMap: Record<
       RhythmGeneratorKeys,
       {
         patterns: number[];
         always: number[];
         match?: RhythmGeneratorKeys;
+        djentPatterns?: number[][];
       } | null
     > = {
       Crash: { patterns: [8, 32], always: [] },
       'Hi-hat': { patterns: [2, 3, 4], always: [] },
-      Snare: { patterns: [2, 3, 4, 8], always: [] },
-      Kick: { patterns: [], always: [0] },
+      Snare: {
+        patterns: [2, 3, 4, 8],
+        always: [],
+        // Add djent-specific snare patterns
+        djentPatterns: [
+          [2, 6, 10, 14], // Linear pattern
+          [4, 12], // Half-time feel
+          [3, 7, 11, 15], // Syncopated
+          [2, 5, 8, 11, 14], // Complex fill-like
+        ]
+      },
+      Kick: {
+        patterns: [],
+        always: [0],
+        // Djent kick patterns - complex double bass patterns
+        djentPatterns: [
+          [0, 1, 4, 5, 8, 9, 12, 13], // Double bass gallop
+          [0, 3, 6, 7, 10, 13], // Syncopated doubles
+          [0, 2, 4, 7, 9, 11, 14], // Odd groupings
+          [0, 1, 2, 8, 9, 10], // Triplet groups
+        ]
+      },
       Guitar1: { patterns: [], always: [], match: 'Kick' },
       Guitar2: { patterns: [], always: [], match: 'Kick' },
       Bass: { patterns: [], always: [], match: 'Kick' },
@@ -120,7 +141,7 @@ export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
         continue;
       }
 
-      const { patterns, always, match } = value;
+      const { patterns, always, match, djentPatterns } = value;
 
       // Get the instrument name as a key of the Instruments type
       const typedKey = key as RhythmGeneratorKeys;
@@ -133,6 +154,27 @@ export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
       // Activate the beats that should always be active for this instrument
       for (const i of always) {
         section[typedKey][i] = true;
+      }
+
+      // Use djent patterns more often based on characteristics
+      const djentPatternChance = characteristics ?
+        0.4 + (characteristics.complexity * 0.4) : 0.3;
+
+      if (djentPatterns && Math.random() > (1 - djentPatternChance)) {
+        const selectedDjentPattern = djentPatterns[Math.floor(Math.random() * djentPatterns.length)];
+        const measureLength = 16; // 16th notes per measure
+
+        for (let measure = 0; measure < Math.floor(sectionLength / measureLength); measure++) {
+          const measureStart = measure * measureLength;
+
+          selectedDjentPattern.forEach(beatOffset => {
+            const absolutePosition = measureStart + beatOffset;
+            if (absolutePosition < sectionLength) {
+              section[typedKey][absolutePosition] = true;
+            }
+          });
+        }
+        continue;
       }
 
       // If there are no patterns for this instrument, randomly activate beats
@@ -167,19 +209,33 @@ export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
       }
     }
 
-    // Switch guitar notes randomly every 1/4 portion of the section
+    // Enhanced guitar note switching with djent chord progressions
     const nullKeys = RhythmGeneratorKeysArray.filter(
       (key) => patternsMap[key] === null,
     );
+
+    // Common djent chord progressions (using available notes)
+    const djentProgressions = [
+      ['F1', 'CSharp1', 'GSharp1', 'C1'], // i - V - ii - iv
+      ['F1', 'ASharp1', 'C1', 'GSharp1'], // i - IV - V - ii
+      ['CSharp1', 'F1', 'G1', 'ASharp1'], // V - i - ii - IV
+    ];
+
+    const selectedProgression = djentProgressions[Math.floor(Math.random() * djentProgressions.length)];
     const quarterLength = Math.floor(sectionLength / 4);
 
     for (let quarter = 0; quarter < 4; quarter++) {
       const startIndex = quarter * quarterLength;
       const endIndex = quarter === 3 ? sectionLength : (quarter + 1) * quarterLength;
-      const randomNullKey = nullKeys[Math.floor(Math.random() * nullKeys.length)];
 
-      for (let i = startIndex; i < endIndex; i++) {
-        section[randomNullKey][i] = section.Kick[i];
+      // Use chord from progression if available, otherwise random
+      const chordNote = selectedProgression[quarter] ||
+        nullKeys[Math.floor(Math.random() * nullKeys.length)];
+
+      if (nullKeys.includes(chordNote as RhythmGeneratorKeys)) {
+        for (let i = startIndex; i < endIndex; i++) {
+          section[chordNote as RhythmGeneratorKeys][i] = section.Kick[i];
+        }
       }
     }
 
