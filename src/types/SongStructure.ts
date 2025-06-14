@@ -35,7 +35,7 @@ export const djentSectionTemplates: Record<SectionType, SectionTemplate[]> = {
       type: 'intro',
       timeSignature: { numerator: 4, denominator: 4 },
       dynamics: 'p',
-      length: 32 * 4,
+      length: 64, // 2 sections worth
       characteristics: {
         complexity: 0.3,
         density: 0.2,
@@ -47,7 +47,7 @@ export const djentSectionTemplates: Record<SectionType, SectionTemplate[]> = {
       type: 'intro',
       timeSignature: { numerator: 7, denominator: 8 },
       dynamics: 'mp',
-      length: 28 * 4, // 4 bars of 7/8
+      length: 56, // Adjusted to work better with grid
       characteristics: {
         complexity: 0.5,
         density: 0.4,
@@ -61,10 +61,10 @@ export const djentSectionTemplates: Record<SectionType, SectionTemplate[]> = {
       type: 'verse',
       timeSignature: { numerator: 4, denominator: 4 },
       dynamics: 'mf',
-      length: 32 * 4,
+      length: 128, // 4 sections worth
       characteristics: {
         complexity: 0.6,
-        density: 0.5,
+        density: 0.7,
         syncopation: 0.7,
         polyrhythm: false,
       },
@@ -73,10 +73,10 @@ export const djentSectionTemplates: Record<SectionType, SectionTemplate[]> = {
       type: 'verse',
       timeSignature: { numerator: 5, denominator: 4 },
       dynamics: 'mf',
-      length: 40 * 4, // 8 bars of 5/4
+      length: 80, // Adjusted for 5/4 time
       characteristics: {
         complexity: 0.7,
-        density: 0.6,
+        density: 0.8,
         syncopation: 0.8,
         polyrhythm: true,
       },
@@ -87,10 +87,10 @@ export const djentSectionTemplates: Record<SectionType, SectionTemplate[]> = {
       type: 'chorus',
       timeSignature: { numerator: 4, denominator: 4 },
       dynamics: 'f',
-      length: 32 * 4,
+      length: 128, // 4 sections worth
       characteristics: {
         complexity: 0.4,
-        density: 0.8,
+        density: 0.9,
         syncopation: 0.5,
         polyrhythm: false,
       },
@@ -101,10 +101,10 @@ export const djentSectionTemplates: Record<SectionType, SectionTemplate[]> = {
       type: 'breakdown',
       timeSignature: { numerator: 7, denominator: 8 },
       dynamics: 'ff',
-      length: 28 * 4,
+      length: 112, // Adjusted for 7/8 time
       characteristics: {
         complexity: 0.9,
-        density: 0.7,
+        density: 0.8,
         syncopation: 0.9,
         polyrhythm: true,
       },
@@ -113,10 +113,10 @@ export const djentSectionTemplates: Record<SectionType, SectionTemplate[]> = {
       type: 'breakdown',
       timeSignature: { numerator: 9, denominator: 8 },
       dynamics: 'ff',
-      length: 36 * 4, // 4 bars of 9/8
+      length: 72, // Adjusted for 9/8 time
       characteristics: {
         complexity: 0.8,
-        density: 0.6,
+        density: 0.7,
         syncopation: 0.8,
         polyrhythm: false,
       },
@@ -127,10 +127,10 @@ export const djentSectionTemplates: Record<SectionType, SectionTemplate[]> = {
       type: 'bridge',
       timeSignature: { numerator: 6, denominator: 8 },
       dynamics: 'mp',
-      length: 24 * 4,
+      length: 96, // 3 sections worth
       characteristics: {
         complexity: 0.4,
-        density: 0.3,
+        density: 0.5,
         syncopation: 0.2,
         polyrhythm: false,
       },
@@ -141,10 +141,10 @@ export const djentSectionTemplates: Record<SectionType, SectionTemplate[]> = {
       type: 'outro',
       timeSignature: { numerator: 4, denominator: 4 },
       dynamics: 'p',
-      length: 32 * 4,
+      length: 64, // 2 sections worth
       characteristics: {
         complexity: 0.2,
-        density: 0.1,
+        density: 0.3,
         syncopation: 0.1,
         polyrhythm: false,
       },
@@ -155,10 +155,10 @@ export const djentSectionTemplates: Record<SectionType, SectionTemplate[]> = {
       type: 'ambient',
       timeSignature: { numerator: 4, denominator: 4 },
       dynamics: 'pp',
-      length: 64 * 4,
+      length: 128, // 4 sections worth
       characteristics: {
         complexity: 0.1,
-        density: 0.05,
+        density: 0.2,
         syncopation: 0.0,
         polyrhythm: false,
       },
@@ -169,10 +169,10 @@ export const djentSectionTemplates: Record<SectionType, SectionTemplate[]> = {
       type: 'buildup',
       timeSignature: { numerator: 4, denominator: 4 },
       dynamics: 'mf',
-      length: 16 * 4,
+      length: 32, // 1 section worth
       characteristics: {
         complexity: 0.5,
-        density: 0.3,
+        density: 0.6,
         syncopation: 0.4,
         polyrhythm: false,
       },

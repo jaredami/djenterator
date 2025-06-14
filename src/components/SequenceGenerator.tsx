@@ -21,7 +21,7 @@ export type Generator<GeneratorKeys extends string> = {
   ) => Activations<GeneratorKeys>;
   generateDurations?(
     section: Activations<GeneratorKeys>,
-    sectionLength: number,
+    songStructure: SectionTemplate[],
   ): Record<GeneratorKeys, (number | null)[] | null>;
 };
 
@@ -115,7 +115,10 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
       const activeNotes: Map<string, Set<string>> = new Map();
 
       Tone.Transport.scheduleRepeat((time) => {
-        const newBeat = (currentBeatRef.current + 1) % (sectionLength * totalSections);
+        const totalBeats = songStructure.length > 0
+          ? songStructure.reduce((total, section) => total + section.length, 0)
+          : sectionLength * totalSections;
+        const newBeat = (currentBeatRef.current + 1) % totalBeats;
         currentBeatRef.current = newBeat;
 
         // Throttle UI updates
@@ -157,6 +160,21 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
                   generator.offsets[instrumentName] ?? 0,
                   durationInSeconds,
                 );
+
+                // Mark this instrument as active
+                activeInstruments.add(instrumentName);
+
+                // Schedule stopping the note tracking when it ends
+                if (durationInSeconds) {
+                  Tone.Transport.scheduleOnce(() => {
+                    activeInstruments.delete(instrumentName);
+                  }, time + durationInSeconds);
+                } else {
+                  // For percussion/short samples, remove from active set after a short delay
+                  Tone.Transport.scheduleOnce(() => {
+                    activeInstruments.delete(instrumentName);
+                  }, time + 0.1);
+                }
               }
             },
           );
@@ -179,60 +197,39 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
       });
     }
     setIsPlaying(!isPlaying);
-  }, [isPlaying, generators, bpm, throttledSetCurrentBeat]);
+  }, [isPlaying, generators, bpm, throttledSetCurrentBeat, songStructure]);
+
+  const restart = useCallback((): void => {
+    setCurrentBeat(0);
+    Tone.Transport.stop();
+    Tone.Transport.cancel();
+    setIsPlaying(false);
+  }, []);
 
   const generateSong = useCallback((): void => {
     // Select a random song structure
     const selectedStructure = djentSongStructures[Math.floor(Math.random() * djentSongStructures.length)];
     setSongStructure(selectedStructure);
 
-    // Calculate total length from song structure
-    const totalBeats = selectedStructure.reduce((total, section) => total + section.length, 0);
-
     const newActivations = generators.map((generator, genIndex) => {
       const fullBeat = Object.fromEntries(
         keys[genIndex].map((instrument) => [instrument, []]),
       ) as Activations<string>;
 
-      // TODO - Replace with song structure generation
-      for (let i = 0; i < totalSections; i++) {
-        const section = generator.generateSection(sectionLength);
-        Object.keys(section).forEach((instrument) => {
-          fullBeat[instrument] = [
-            ...section[instrument],
-            ...fullBeat[instrument],
-          ];
+      // Generate each section according to its template
+      selectedStructure.forEach((sectionTemplate) => {
+        // Generate section with the specified length and characteristics
+        const sectionActivations = generator.generateSection(
+          sectionTemplate.length,
+          sectionTemplate.characteristics
+        );
+
+        // Concatenate the section activations to the full beat
+        Object.keys(sectionActivations).forEach((instrument) => {
+          if (!fullBeat[instrument]) fullBeat[instrument] = [];
+          fullBeat[instrument] = fullBeat[instrument].concat(sectionActivations[instrument]);
         });
-      }
-
-      // TODO - Fix generation via song structures
-      // let currentBeatPosition = 0;
-
-      // // Generate each section according to its template
-      // selectedStructure.forEach((sectionTemplate) => {
-      //   // Modify generation parameters based on section characteristics
-      //   const sectionActivations = generator.generateSection(
-      //     sectionTemplate.length,
-      //     sectionTemplate.characteristics
-      //   );
-
-      //   // Apply dynamics (volume adjustments based on section)
-      //   const dynamicsMultiplier = getDynamicsMultiplier(sectionTemplate.dynamics);
-
-      //   Object.keys(sectionActivations).forEach((instrument) => {
-      //     if (!fullBeat[instrument]) fullBeat[instrument] = [];
-
-      //     // Apply section characteristics to modify patterns
-      //     const modifiedPattern = applySectionCharacteristics(
-      //       sectionActivations[instrument],
-      //       sectionTemplate.characteristics
-      //     );
-
-      //     fullBeat[instrument] = fullBeat[instrument].concat(modifiedPattern);
-      //   });
-
-      //   currentBeatPosition += sectionTemplate.length;
-      // });
+      });
 
       return fullBeat;
     });
@@ -240,7 +237,7 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
     // Generate durations with section-aware logic
     const songDurations = generators.map((generator, index) => {
       if (generator.generateDurations) {
-        return generator.generateDurations(newActivations[index], sectionLength);
+        return generator.generateDurations(newActivations[index], selectedStructure);
       }
       return {};
     });
@@ -248,47 +245,7 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
     restart();
     setActivations(newActivations);
     setDurations(songDurations);
-  }, [generators, keys]);
-
-  // Helper function to get volume multiplier based on dynamics
-  const getDynamicsMultiplier = (dynamics: string): number => {
-    const dynamicsMap: Record<string, number> = {
-      'pp': 0.1,
-      'p': 0.3,
-      'mp': 0.5,
-      'mf': 0.7,
-      'f': 0.9,
-      'ff': 1.0,
-    };
-    return dynamicsMap[dynamics] || 0.7;
-  };
-
-  // Helper function to apply section characteristics to patterns
-  const applySectionCharacteristics = (
-    pattern: boolean[],
-    characteristics: SectionTemplate['characteristics']
-  ): boolean[] => {
-    let modifiedPattern = [...pattern];
-
-    // Apply density - randomly remove notes based on density level
-    if (characteristics.density < 1.0) {
-      modifiedPattern = modifiedPattern.map(beat =>
-        beat && Math.random() < characteristics.density
-      );
-    }
-
-    // Apply complexity - add or remove syncopated beats
-    if (characteristics.syncopation > 0.5) {
-      // Add some off-beat activations
-      for (let i = 1; i < modifiedPattern.length; i += 2) {
-        if (Math.random() < characteristics.syncopation * 0.3) {
-          modifiedPattern[i] = true;
-        }
-      }
-    }
-
-    return modifiedPattern;
-  };
+  }, [generators, keys, restart]);
 
   // Update current section tracking
   useEffect(() => {
@@ -307,13 +264,6 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
 
     setCurrentSection(sectionIndex);
   }, [currentBeat, songStructure]);
-
-  const restart = useCallback((): void => {
-    setCurrentBeat(0);
-    Tone.Transport.stop();
-    Tone.Transport.cancel();
-    setIsPlaying(false);
-  }, []);
 
   const toggleBeat = useCallback((
     genIndex: number,
@@ -374,7 +324,10 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
   }, [generators]);
 
   // Use virtualized grid for large sequences
-  const shouldUseVirtualizedGrid = (sectionLength * totalSections) > 512;
+  const totalBeatsInSong = songStructure.length > 0
+    ? songStructure.reduce((total, section) => total + section.length, 0)
+    : sectionLength * totalSections;
+  const shouldUseVirtualizedGrid = totalBeatsInSong > 512;
   const GridComponent = shouldUseVirtualizedGrid ? VirtualizedBeatGrid : BeatGrid;
 
   return (
@@ -423,7 +376,7 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
             activations={generatorActivations}
             currentBeat={currentBeat}
             toggleBeat={beatGridToggleFunctions[genIndex]}
-            totalNumberOfBeats={sectionLength * totalSections}
+            totalNumberOfBeats={totalBeatsInSong}
           />
         </div>
       ))}

@@ -1,5 +1,6 @@
 import * as Tone from 'tone';
 import { Activations, Generator } from '../components/SequenceGenerator';
+import { SectionTemplate } from '../types/SongStructure';
 
 import bassClip from '../sounds/bass-note-f-trim-2.mp3';
 import crashClip from '../sounds/crash.mp3';
@@ -243,40 +244,61 @@ export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
   },
   generateDurations: (
     songActivations: Activations<RhythmGeneratorKeys>,
-    sectionLength: number,
+    songStructure: SectionTemplate[],
   ) => {
-    const numberOfSections = songActivations.Guitar1.length / sectionLength;
+    // Calculate section boundaries from the song structure
+    const sectionBoundaries: { start: number; end: number; template: SectionTemplate }[] = [];
+    let currentPosition = 0;
+
+    songStructure.forEach((sectionTemplate) => {
+      sectionBoundaries.push({
+        start: currentPosition,
+        end: currentPosition + sectionTemplate.length,
+        template: sectionTemplate
+      });
+      currentPosition += sectionTemplate.length;
+    });
+
+    // Find the last active beat in each section
     const lastActiveBeatsOfSections: number[] = [];
-    for (let i = 0; i < numberOfSections; i++) {
-      const startOfSectionIndex = i * sectionLength;
-      const endOfSectionIndex = startOfSectionIndex + sectionLength;
-      const section = songActivations.Guitar1.slice(
-        startOfSectionIndex,
-        endOfSectionIndex,
-      );
+    sectionBoundaries.forEach(({ start, end }) => {
+      const section = songActivations.Guitar1.slice(start, end);
       const lastActiveBeatOfSection = section.reduce(
         (acc, beat, i) => (beat ? i : acc),
         0,
       );
-      lastActiveBeatsOfSections.push(
-        lastActiveBeatOfSection + startOfSectionIndex,
-      );
-    }
+      lastActiveBeatsOfSections.push(lastActiveBeatOfSection + start);
+    });
 
     const guitarAndBassDurations = songActivations.Guitar1.map((beat, i) => {
       if (songActivations.Guitar1[i]) {
+        // Find which section this beat belongs to
+        const currentSection = sectionBoundaries.find(
+          ({ start, end }) => i >= start && i < end
+        );
+
+        if (!currentSection) return 0.25; // Default duration if section not found
+
         // If this is the last active beat of a section, set duration to remaining beats
         if (lastActiveBeatsOfSections.includes(i)) {
-          const remainingBeatsInSection = sectionLength - (i % sectionLength);
+          const remainingBeatsInSection = currentSection.end - i;
           const maxDuration = remainingBeatsInSection / 4;
           return maxDuration;
         }
 
-        // Calculate which quarter of the section this beat belongs to
+        // Calculate which quarter of the current section this beat belongs to
+        const sectionLength = currentSection.end - currentSection.start;
+        const beatPositionInSection = i - currentSection.start;
         const quarterLength = Math.floor(sectionLength / 4);
-        const currentQuarter = Math.floor((i % sectionLength) / quarterLength);
+
+        if (quarterLength === 0) {
+          // Section is too short to divide into quarters
+          return 0.25;
+        }
+
+        const currentQuarter = Math.floor(beatPositionInSection / quarterLength);
         const nextQuarterStart = (currentQuarter + 1) * quarterLength;
-        const beatsUntilNextQuarter = nextQuarterStart - (i % sectionLength);
+        const beatsUntilNextQuarter = nextQuarterStart - beatPositionInSection;
 
         // Calculate maximum duration that won't overlap with next quarter
         const maxDuration = beatsUntilNextQuarter / 4;
