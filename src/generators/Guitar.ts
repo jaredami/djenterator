@@ -1,5 +1,6 @@
 import * as Tone from 'tone';
 import { Activations, Generator } from '../components/SequenceGenerator';
+import { SectionTemplate } from '../types/SongStructure';
 import E4Clip from '../sounds/guitar/gE4.mp3';
 import DSharp4Clip from '../sounds/guitar/gDSharp4.mp3';
 import D4Clip from '../sounds/guitar/gD4.mp3';
@@ -39,7 +40,7 @@ export const GuitarGeneratorKeysArray = [
   // 'ASharp1',
   // 'GSharp1',
   // 'G1',
-  'F1',
+  // 'F1',
 ] as const;
 
 export type GuitarGeneratorKeys = (typeof GuitarGeneratorKeysArray)[number];
@@ -52,22 +53,22 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
     // E4: new Tone.Player(E4Clip).toDestination(),
     // 'D#4': new T4one.Player(DSharp4Clip).toDestination(),
     // D4: new Tone.Player(D4Clip).toDestination(),
-    CSharp4: new Tone.Player(CSharp4Clip).toDestination(),
-    C4: new Tone.Player(C4Clip).toDestination(),
+    CSharp4: new Tone.Player({ url: CSharp4Clip, fadeOut: 0.01 }).toDestination(),
+    C4: new Tone.Player({ url: C4Clip, fadeOut: 0.01 }).toDestination(),
     // B4: new Tone.Player(B4Clip).toDestination(),
-    ASharp4: new Tone.Player(ASharp4Clip).toDestination(),
+    ASharp4: new Tone.Player({ url: ASharp4Clip, fadeOut: 0.01 }).toDestination(),
     // A4: new Tone.Player(A4Clip).toDestination(),
-    GSharp4: new Tone.Player(GSharp4Clip).toDestination(),
-    G4: new Tone.Player(G4Clip).toDestination(),
+    GSharp4: new Tone.Player({ url: GSharp4Clip, fadeOut: 0.01 }).toDestination(),
+    G4: new Tone.Player({ url: G4Clip, fadeOut: 0.01 }).toDestination(),
     // 'F#4': new Tone.Player(FSharp4Clip).toDestination(),
-    F4: new Tone.Player(F4Clip).toDestination(),
+    F4: new Tone.Player({ url: F4Clip, fadeOut: 0.01 }).toDestination(),
     //=================
     // CSharp1: new Tone.Player(CSharp1Clip).toDestination(),
     // C1: new Tone.Player(C1Clip).toDestination(),
     // ASharp1: new Tone.Player(ASharp1Clip).toDestination(),
     // GSharp1: new Tone.Player(GSharp1Clip).toDestination(),
     // G1: new Tone.Player(G1Clip).toDestination(),
-    F1: new Tone.Player(F1Clip).toDestination(),
+    // F1: new Tone.Player(F1Clip).toDestination(),
   },
   volumes: {
     // E4: volume,
@@ -88,7 +89,7 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
     // ASharp1: volume,
     // GSharp1: volume,
     // G1: volume,
-    F1: volume,
+    // F1: volume,
   },
   offsets: {
     // Apply offset to all keys
@@ -96,7 +97,7 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
       GuitarGeneratorKeysArray.map((key) => [key, offset]),
     ) as Record<GuitarGeneratorKeys, number>),
   },
-  generateSection: (sectionLength) => {
+  generateSection: (sectionLength, characteristics) => {
     // 30% chance to generate an empty section with no beats activated
     if (Math.random() < 0.3) {
       return Object.fromEntries(
@@ -107,20 +108,91 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
       ) as Activations<GuitarGeneratorKeys>;
     }
 
-    return generateSectionPattern1(sectionLength);
+    if (Math.random() < 0.4) {
+      return generateRandomNoteSequence(sectionLength);
+    }
+
+    // Choose from lead guitar pattern set
+    const leadPatternGenerators = [
+      generateMelodicScaleRun,
+      generateArpeggioPattern,
+      generatePentatonicLicks,
+      generateSustainedMelody,
+      generateTechnicalRuns,
+      generateAmbientSwells,
+    ];
+
+    // If characteristics are provided, bias towards certain patterns
+    let selectedGenerator;
+    if (characteristics) {
+      if (characteristics.polyrhythm) {
+        selectedGenerator = generateTechnicalRuns; // Technical patterns for polyrhythm
+      } else if (characteristics.syncopation > 0.7) {
+        selectedGenerator = generatePentatonicLicks; // Licks work well with syncopation
+      } else if (characteristics.complexity > 0.6) {
+        selectedGenerator = Math.random() > 0.5 ? generateTechnicalRuns : generateMelodicScaleRun;
+      } else if (characteristics.density < 0.3) {
+        selectedGenerator = Math.random() > 0.5 ? generateAmbientSwells : generateSustainedMelody;
+      } else {
+        selectedGenerator = leadPatternGenerators[Math.floor(Math.random() * leadPatternGenerators.length)];
+      }
+    } else {
+      selectedGenerator = leadPatternGenerators[Math.floor(Math.random() * leadPatternGenerators.length)];
+    }
+
+    return selectedGenerator(sectionLength);
   },
-  generateDurations: (section: Activations<GuitarGeneratorKeys>) => {
-    // The durations for each instrument should all be 1 quarter note
-    const oneBeat = 0.25; // 0.25 beats = 1 quarter note
-    const generateInstrumentDurations = (note: (boolean | null)[]) => {
-      return note.map((beat) => (beat ? oneBeat : null));
+  generateDurations: (section: Activations<GuitarGeneratorKeys>, songStructure: SectionTemplate[]) => {
+    // For lead guitar, we want longer, more musical durations
+    // Each grid position represents a quarter note (0.25 beats)
+    const shortBeat = 0.25; // Quarter note for quick passages
+    const normalBeat = 0.5;  // Half note for standard notes
+    const longBeat = 2.0;    // Long sustain for melodic notes
+    const veryLongBeat = 4.0; // Very long sustain for ambient sections
+
+    const generateInstrumentDurations = (beatsForNote: (boolean | null)[], instrumentName: GuitarGeneratorKeys) => {
+      return beatsForNote.map((beat, index) => {
+        if (!beat) return null;
+
+        // Check if ANY instrument has active beats before or after this position
+        const hasAnyNoteBefore = index > 0 && GuitarGeneratorKeysArray.some(
+          instrument => section[instrument][index - 1]
+        );
+        const hasAnyNoteAfter = index < beatsForNote.length - 1 && GuitarGeneratorKeysArray.some(
+          instrument => section[instrument][index + 1]
+        );
+        const isInBusySection = hasAnyNoteBefore || hasAnyNoteAfter;
+
+        // Check if this note is followed by a long gap (indicates sustained note)
+        let gapAfter = 0;
+        for (let i = index + 1; i < beatsForNote.length; i++) {
+          // Check if ANY instrument has a note at position i
+          const anyInstrumentActive = GuitarGeneratorKeysArray.some(
+            instrument => section[instrument][i]
+          );
+          if (anyInstrumentActive) break;
+          gapAfter++;
+        }
+
+        // Determine duration based on context
+        if (gapAfter >= 8) {
+          return veryLongBeat; // Long sustained note
+        } else if (gapAfter >= 4) {
+          return longBeat; // Medium sustained note
+        } else if (isInBusySection) {
+          return shortBeat; // Quick notes when other instruments are busy
+        } else {
+          return normalBeat; // Standard melodic note
+        }
+      });
     };
+
     const durations: Record<string, (number | null)[] | null> =
       Object.fromEntries(
         GuitarGeneratorKeysArray.map(
           (note): [string, (number | null)[] | null] => [
             note,
-            generateInstrumentDurations(section[note]),
+            generateInstrumentDurations(section[note], note),
           ],
         ),
       );
@@ -129,7 +201,7 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
 };
 
 // Random sequence of adjacent notes
-const generateSectionPattern1 = (sectionLength: number) => {
+const generateRandomNoteSequence = (sectionLength: number) => {
   const section = Object.fromEntries(
     GuitarGeneratorKeysArray.map((instrument) => [
       instrument,
@@ -151,12 +223,11 @@ const generateSectionPattern1 = (sectionLength: number) => {
     section[randomKey][i] = true;
     lastKey = randomKey;
   }
-
   return section;
 };
 
-// Generate repeating sequences of adjacent notes
-const generateSectionPattern2 = (sectionLength: number) => {
+// Lead guitar pattern: Scale-based melodic runs
+const generateMelodicScaleRun = (sectionLength: number) => {
   const section = Object.fromEntries(
     GuitarGeneratorKeysArray.map((instrument) => [
       instrument,
@@ -164,33 +235,41 @@ const generateSectionPattern2 = (sectionLength: number) => {
     ]),
   ) as Activations<GuitarGeneratorKeys>;
 
-  let i = 0;
-  while (i < sectionLength) {
-    // Random sequence length between 3 and 10
-    let sequenceLength = Math.floor(Math.random() * 8) + 3;
-    sequenceLength = Math.min(sequenceLength, sectionLength - i); // Ensure sequence doesn't exceed section length
+  // Create a melodic scale run with gaps for musicality
+  const scaleNotes = [...GuitarGeneratorKeysArray]; // Use available notes as our "scale"
+  let currentNoteIndex = Math.floor(Math.random() * scaleNotes.length);
 
-    // Random start index for sequence
-    const startIndex = Math.floor(
-      Math.random() * GuitarGeneratorKeysArray.length,
-    );
-    const direction = Math.random() > 0.5 ? 1 : -1; // Decide direction: 1 for next instrument, -1 for previous
+  // Generate melodic phrases with rests between them
+  let position = 0;
+  while (position < sectionLength) {
+    // Phrase length: 3-8 notes
+    const phraseLength = Math.floor(Math.random() * 6) + 3;
+    const actualPhraseLength = Math.min(phraseLength, sectionLength - position);
 
-    for (let j = 0; j < sequenceLength; j++) {
-      // Wrap around on reaching ends
-      const currentIndex =
-        (startIndex + j * direction + GuitarGeneratorKeysArray.length) %
-        GuitarGeneratorKeysArray.length;
-      section[GuitarGeneratorKeysArray[currentIndex]][i] = true;
-      i++;
+    // Generate phrase
+    for (let i = 0; i < actualPhraseLength; i++) {
+      const note = scaleNotes[currentNoteIndex];
+      section[note][position] = true;
+
+      // Move melodically (mostly stepwise motion)
+      const direction = Math.random() > 0.5 ? 1 : -1;
+      const stepSize = Math.random() > 0.7 ? 2 : 1; // Mostly steps, some leaps
+      currentNoteIndex = Math.max(0, Math.min(scaleNotes.length - 1,
+        currentNoteIndex + (direction * stepSize)));
+
+      position += Math.random() > 0.3 ? 1 : 2; // Some notes get extra space
     }
+
+    // Rest between phrases (2-6 beats)
+    const restLength = Math.floor(Math.random() * 5) + 2;
+    position += restLength;
   }
 
   return section;
 };
 
-// Generate repeating sequences of notes that are at most 2 notes apart from each other
-const generateSectionPattern3 = (sectionLength: number) => {
+// Lead guitar pattern: Arpeggiated chord progressions
+const generateArpeggioPattern = (sectionLength: number) => {
   const section = Object.fromEntries(
     GuitarGeneratorKeysArray.map((instrument) => [
       instrument,
@@ -198,42 +277,41 @@ const generateSectionPattern3 = (sectionLength: number) => {
     ]),
   ) as Activations<GuitarGeneratorKeys>;
 
-  // Helper function to wrap index correctly
-  function wrapIndex(index: number, length: number) {
-    return ((index % length) + length) % length;
-  }
+  // Define chord shapes using available notes
+  const chordProgressions = [
+    ['F1', 'ASharp4', 'CSharp4'], // F major-ish
+    ['CSharp4', 'F4', 'GSharp4'], // C# major-ish
+    ['G4', 'C4', 'F4'], // G minor-ish
+    ['ASharp4', 'CSharp4', 'F1'], // Bb major-ish
+  ];
 
-  let i = 0;
-  while (i < sectionLength) {
-    // Random sequence length between 3 and 10
-    let sequenceLength = Math.floor(Math.random() * 8) + 3;
-    sequenceLength = Math.min(sequenceLength, sectionLength - i); // Ensure sequence doesn't exceed section length
+  let position = 0;
+  let chordIndex = 0;
 
-    // Random start index for sequence
-    const startIndex = Math.floor(
-      Math.random() * GuitarGeneratorKeysArray.length,
-    );
+  while (position < sectionLength) {
+    const currentChord = chordProgressions[chordIndex % chordProgressions.length];
+    const arpeggioLength = Math.min(8, sectionLength - position); // 8 beats per chord max
 
-    // Decide direction: -2, -1 for previous instruments; 1, 2 for next instruments
-    const directions = [-2, -1, 1, 2];
-    const direction = directions[Math.floor(Math.random() * directions.length)];
+    // Arpeggiate the chord
+    for (let i = 0; i < arpeggioLength && position < sectionLength; i++) {
+      const noteIndex = i % currentChord.length;
+      const note = currentChord[noteIndex] as GuitarGeneratorKeys;
 
-    for (let j = 0; j < sequenceLength; j++) {
-      // Wrap around on reaching ends
-      const currentIndex = wrapIndex(
-        startIndex + j * direction,
-        GuitarGeneratorKeysArray.length,
-      );
-      section[GuitarGeneratorKeysArray[currentIndex]][i] = true;
-      i++;
+      if (GuitarGeneratorKeysArray.includes(note)) {
+        section[note][position] = true;
+      }
+
+      position += Math.random() > 0.2 ? 2 : 3; // Varied spacing
     }
+
+    chordIndex++;
   }
 
   return section;
 };
 
-// Generate repeating sequence of random notes
-const generateSectionPattern4 = (sectionLength: number) => {
+// Lead guitar pattern: Pentatonic licks and bends
+const generatePentatonicLicks = (sectionLength: number) => {
   const section = Object.fromEntries(
     GuitarGeneratorKeysArray.map((instrument) => [
       instrument,
@@ -241,40 +319,34 @@ const generateSectionPattern4 = (sectionLength: number) => {
     ]),
   ) as Activations<GuitarGeneratorKeys>;
 
-  // Helper function to wrap index correctly
-  function wrapIndex(index: number, length: number) {
-    return ((index % length) + length) % length;
-  }
+  // Use higher notes for lead lines
+  const leadNotes = ['CSharp4', 'C4', 'ASharp4', 'GSharp4', 'G4', 'F4'].filter(note =>
+    GuitarGeneratorKeysArray.includes(note as GuitarGeneratorKeys)
+  ) as GuitarGeneratorKeys[];
 
-  // Random sequence length between 3 and 10
-  let sequenceLength = Math.floor(Math.random() * 12) + 5;
-  sequenceLength = Math.min(sequenceLength, sectionLength); // Ensure sequence doesn't exceed section length
+  let position = 0;
 
-  const sequence = [];
-  for (let j = 0; j < sequenceLength; j++) {
-    // Random start index for sequence
-    const randomIndex = Math.floor(
-      Math.random() * GuitarGeneratorKeysArray.length,
-    );
+  while (position < sectionLength) {
+    // Generate short pentatonic licks
+    const lickLength = Math.floor(Math.random() * 4) + 2; // 2-5 notes
+    const startNote = Math.floor(Math.random() * leadNotes.length);
 
-    const currentIndex = wrapIndex(
-      randomIndex,
-      GuitarGeneratorKeysArray.length,
-    );
+    for (let i = 0; i < lickLength && position < sectionLength; i++) {
+      const noteIndex = (startNote + i) % leadNotes.length;
+      const note = leadNotes[noteIndex];
+      section[note][position] = true;
+      position++;
+    }
 
-    sequence.push(GuitarGeneratorKeysArray[currentIndex]);
-  }
-
-  for (let i = 0; i < sectionLength; i++) {
-    const note = sequence[i % sequenceLength] as keyof typeof section;
-    section[note][i] = true;
+    // Rest between licks
+    position += Math.floor(Math.random() * 6) + 2;
   }
 
   return section;
 };
 
-const generateSectionPattern5 = (sectionLength: number) => {
-  // Activate random beats on one random note
+// Lead guitar pattern: Sustained single notes with vibrato effect
+const generateSustainedMelody = (sectionLength: number) => {
   const section = Object.fromEntries(
     GuitarGeneratorKeysArray.map((instrument) => [
       instrument,
@@ -282,17 +354,79 @@ const generateSectionPattern5 = (sectionLength: number) => {
     ]),
   ) as Activations<GuitarGeneratorKeys>;
 
-  const randomIndex = Math.floor(
-    Math.random() * GuitarGeneratorKeysArray.length,
-  );
+  // Focus on longer, sustained notes
+  let position = 0;
 
-  const note = GuitarGeneratorKeysArray[randomIndex];
-  for (let i = 0; i < sectionLength; i++) {
-    section[note][i] = Math.random() > 0.5;
+  while (position < sectionLength) {
+    // Pick a note to sustain
+    const note = GuitarGeneratorKeysArray[Math.floor(Math.random() * GuitarGeneratorKeysArray.length)];
+    section[note][position] = true;
+
+    // Sustain for 4-12 beats
+    const sustainLength = Math.floor(Math.random() * 9) + 4;
+    position += Math.min(sustainLength, sectionLength - position);
+
+    // Small gap before next note
+    position += Math.floor(Math.random() * 3) + 1;
   }
 
-  // Always activate first beat
-  section[note][0] = true;
+  return section;
+};
+
+// Lead guitar pattern: Technical runs and sweeps
+const generateTechnicalRuns = (sectionLength: number) => {
+  const section = Object.fromEntries(
+    GuitarGeneratorKeysArray.map((instrument) => [
+      instrument,
+      Array(sectionLength).fill(false),
+    ]),
+  ) as Activations<GuitarGeneratorKeys>;
+
+  let position = 0;
+
+  while (position < sectionLength) {
+    // Fast technical run
+    const runLength = Math.floor(Math.random() * 8) + 4;
+    const direction = Math.random() > 0.5 ? 1 : -1; // Up or down
+    let noteIndex = direction > 0 ? 0 : GuitarGeneratorKeysArray.length - 1;
+
+    for (let i = 0; i < runLength && position < sectionLength; i++) {
+      const note = GuitarGeneratorKeysArray[noteIndex];
+      section[note][position] = true;
+
+      noteIndex = Math.max(0, Math.min(GuitarGeneratorKeysArray.length - 1,
+        noteIndex + direction));
+      position++;
+    }
+
+    // Longer rest after technical runs
+    position += Math.floor(Math.random() * 8) + 4;
+  }
+
+  return section;
+};
+
+// Lead guitar pattern: Ambient/atmospheric swells
+const generateAmbientSwells = (sectionLength: number) => {
+  const section = Object.fromEntries(
+    GuitarGeneratorKeysArray.map((instrument) => [
+      instrument,
+      Array(sectionLength).fill(false),
+    ]),
+  ) as Activations<GuitarGeneratorKeys>;
+
+  // Very sparse, atmospheric pattern
+  const positions = [];
+  for (let i = 0; i < sectionLength; i += Math.floor(Math.random() * 8) + 4) {
+    positions.push(i);
+  }
+
+  positions.forEach(pos => {
+    const note = GuitarGeneratorKeysArray[Math.floor(Math.random() * GuitarGeneratorKeysArray.length)];
+    if (pos < sectionLength) {
+      section[note][pos] = true;
+    }
+  });
 
   return section;
 };
