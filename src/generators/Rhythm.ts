@@ -37,6 +37,15 @@ export type RhythmGeneratorKeys = (typeof RhythmGeneratorKeysArray)[number];
 
 const guitarNoteVolume = -5;
 
+type PatternConfig = {
+  patterns: number[];
+  always: number[];
+  match?: RhythmGeneratorKeys;
+  djentPatterns?: number[][];
+} | null;
+
+type PatternsMap = Record<RhythmGeneratorKeys, PatternConfig>;
+
 export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
   clips: {
     Crash: new Tone.Player(crashClip).toDestination(),
@@ -84,50 +93,7 @@ export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
     F1: 0.05,
   },
   generateSection: (sectionLength: number, characteristics?) => {
-    const patternsMap: Record<
-      RhythmGeneratorKeys,
-      {
-        patterns: number[];
-        always: number[];
-        match?: RhythmGeneratorKeys;
-        djentPatterns?: number[][];
-      } | null
-    > = {
-      Crash: { patterns: [8, 32], always: [] },
-      'Hi-hat': { patterns: [2, 3, 4], always: [] },
-      Snare: {
-        patterns: [2, 3, 4, 8],
-        always: [],
-        // Add djent-specific snare patterns
-        djentPatterns: [
-          [2, 6, 10, 14], // Linear pattern
-          [4, 12], // Half-time feel
-          [3, 7, 11, 15], // Syncopated
-          [2, 5, 8, 11, 14], // Complex fill-like
-        ]
-      },
-      Kick: {
-        patterns: [],
-        always: [0],
-        // Djent kick patterns - complex double bass patterns
-        djentPatterns: [
-          [0, 1, 4, 5, 8, 9, 12, 13], // Double bass gallop
-          [0, 3, 6, 7, 10, 13], // Syncopated doubles
-          [0, 2, 4, 7, 9, 11, 14], // Odd groupings
-          [0, 1, 2, 8, 9, 10], // Triplet groups
-        ]
-      },
-      Guitar1: { patterns: [], always: [], match: 'Kick' },
-      Guitar2: { patterns: [], always: [], match: 'Kick' },
-      Bass: { patterns: [], always: [], match: 'Kick' },
-      CSharp1: null,
-      C1: null,
-      ASharp1: null,
-      GSharp1: null,
-      G1: null,
-      F1: null,
-    };
-
+    // Initialize section with all instruments set to inactive
     const section: Activations<RhythmGeneratorKeys> = Object.fromEntries(
       RhythmGeneratorKeysArray.map(
         (instrument): [RhythmGeneratorKeys, boolean[]] => [
@@ -137,108 +103,14 @@ export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
       ),
     ) as Activations<RhythmGeneratorKeys>;
 
-    for (const [key, value] of Object.entries(patternsMap)) {
-      if (!value) {
-        continue;
-      }
+    // Generate drum patterns first (kick pattern is needed for other instruments)
+    generateDrumPatterns(section, sectionLength, characteristics);
 
-      const { patterns, always, match, djentPatterns } = value;
+    // Generate rhythm guitar patterns (based on kick pattern)
+    generateRhythmGuitarPatterns(section);
 
-      // Get the instrument name as a key of the Instruments type
-      const typedKey = key as RhythmGeneratorKeys;
-
-      if (match) {
-        section[typedKey] = section[match];
-        continue;
-      }
-
-      // Activate the beats that should always be active for this instrument
-      for (const i of always) {
-        section[typedKey][i] = true;
-      }
-
-      // Use djent patterns more often based on characteristics
-      const djentPatternChance = characteristics ?
-        0.4 + (characteristics.complexity * 0.4) : 0.3;
-
-      if (djentPatterns && Math.random() > (1 - djentPatternChance)) {
-        const selectedDjentPattern = djentPatterns[Math.floor(Math.random() * djentPatterns.length)];
-        const measureLength = 16; // 16th notes per measure
-
-        for (let measure = 0; measure < Math.floor(sectionLength / measureLength); measure++) {
-          const measureStart = measure * measureLength;
-
-          selectedDjentPattern.forEach(beatOffset => {
-            const absolutePosition = measureStart + beatOffset;
-            if (absolutePosition < sectionLength) {
-              section[typedKey][absolutePosition] = true;
-            }
-          });
-        }
-        continue;
-      }
-
-      // If there are no patterns for this instrument, randomly activate beats
-      if (patterns.length === 0) {
-        section[typedKey] = section[typedKey].map(
-          // Randomly activate the beat, but keep it active if it was already active due to the always array
-          (beat) => beat || Math.random() > 0.5,
-        );
-        // Skip the rest of the loop
-        continue;
-      }
-
-      // Randomly select a pattern and activate the beats for that pattern
-      const selectedPattern =
-        patterns[Math.floor(Math.random() * patterns.length)];
-
-      // 70% of the time, only activate every other index from the pattern for the Snare
-      const skipSnareHits = Math.random() > 0.3;
-      let previousSnareActivated = true;
-      for (let i = 0; i < section[typedKey].length; i += selectedPattern) {
-        if (skipSnareHits && typedKey === 'Snare') {
-          if (previousSnareActivated) {
-            previousSnareActivated = false;
-            continue;
-          } else {
-            previousSnareActivated = true;
-            section[typedKey][i] = true;
-          }
-        } else {
-          section[typedKey][i] = true;
-        }
-      }
-    }
-
-    // Enhanced guitar note switching with djent chord progressions
-    const nullKeys = RhythmGeneratorKeysArray.filter(
-      (key) => patternsMap[key] === null,
-    );
-
-    // Common djent chord progressions (using available notes)
-    const djentProgressions = [
-      ['F1', 'CSharp1', 'GSharp1', 'C1'], // i - V - ii - iv
-      ['F1', 'ASharp1', 'C1', 'GSharp1'], // i - IV - V - ii
-      ['CSharp1', 'F1', 'G1', 'ASharp1'], // V - i - ii - IV
-    ];
-
-    const selectedProgression = djentProgressions[Math.floor(Math.random() * djentProgressions.length)];
-    const quarterLength = Math.floor(sectionLength / 4);
-
-    for (let quarter = 0; quarter < 4; quarter++) {
-      const startIndex = quarter * quarterLength;
-      const endIndex = quarter === 3 ? sectionLength : (quarter + 1) * quarterLength;
-
-      // Use chord from progression if available, otherwise random
-      const chordNote = selectedProgression[quarter] ||
-        nullKeys[Math.floor(Math.random() * nullKeys.length)];
-
-      if (nullKeys.includes(chordNote as RhythmGeneratorKeys)) {
-        for (let i = startIndex; i < endIndex; i++) {
-          section[chordNote as RhythmGeneratorKeys][i] = section.Kick[i];
-        }
-      }
-    }
+    // Generate guitar note patterns (chord progressions)
+    generateGuitarNotePatterns(section, sectionLength);
 
     return section;
   },
@@ -343,3 +215,139 @@ guitar2.connect(panRight);
 // Add guitars to the generator
 RhythmGenerator.clips.Guitar1 = guitar1;
 RhythmGenerator.clips.Guitar2 = guitar2;
+
+const generateDrumPatterns = (
+  section: Activations<RhythmGeneratorKeys>,
+  sectionLength: number,
+  characteristics?: any
+) => {
+  const drumPatterns: Partial<PatternsMap> = {
+    Crash: { patterns: [8, 32], always: [] },
+    'Hi-hat': { patterns: [2, 3, 4], always: [] },
+    Snare: {
+      patterns: [2, 3, 4, 8],
+      always: [],
+      djentPatterns: [
+        [2, 6, 10, 14], // Linear pattern
+        [4, 12], // Half-time feel
+        [3, 7, 11, 15], // Syncopated
+        [2, 5, 8, 11, 14], // Complex fill-like
+      ]
+    },
+    Kick: {
+      patterns: [],
+      always: [0],
+      djentPatterns: [
+        [0, 1, 4, 5, 8, 9, 12, 13], // Double bass gallop
+        [0, 3, 6, 7, 10, 13], // Syncopated doubles
+        [0, 2, 4, 7, 9, 11, 14], // Odd groupings
+        [0, 1, 2, 8, 9, 10], // Triplet groups
+      ]
+    },
+  };
+
+  for (const [key, value] of Object.entries(drumPatterns)) {
+    if (!value) continue;
+
+    const { patterns, always, djentPatterns } = value;
+    const typedKey = key as RhythmGeneratorKeys;
+
+    // Activate always-on beats
+    for (const i of always) {
+      section[typedKey][i] = true;
+    }
+
+    // Use djent patterns based on characteristics
+    const djentPatternChance = characteristics ?
+      0.4 + (characteristics.complexity * 0.4) : 0.3;
+
+    if (djentPatterns && Math.random() > (1 - djentPatternChance)) {
+      const selectedDjentPattern = djentPatterns[Math.floor(Math.random() * djentPatterns.length)];
+      const measureLength = 16; // 16th notes per measure
+
+      for (let measure = 0; measure < Math.floor(sectionLength / measureLength); measure++) {
+        const measureStart = measure * measureLength;
+        selectedDjentPattern.forEach(beatOffset => {
+          const absolutePosition = measureStart + beatOffset;
+          if (absolutePosition < sectionLength) {
+            section[typedKey][absolutePosition] = true;
+          }
+        });
+      }
+      continue;
+    }
+
+    // Handle regular patterns or random activation
+    if (patterns.length === 0) {
+      section[typedKey] = section[typedKey].map(
+        (beat) => beat || Math.random() > 0.5,
+      );
+      continue;
+    }
+
+    // Apply selected pattern
+    const selectedPattern = patterns[Math.floor(Math.random() * patterns.length)];
+    const skipSnareHits = Math.random() > 0.3;
+    let previousSnareActivated = true;
+
+    for (let i = 0; i < section[typedKey].length; i += selectedPattern) {
+      if (skipSnareHits && typedKey === 'Snare') {
+        if (previousSnareActivated) {
+          previousSnareActivated = false;
+          continue;
+        } else {
+          previousSnareActivated = true;
+          section[typedKey][i] = true;
+        }
+      } else {
+        section[typedKey][i] = true;
+      }
+    }
+  }
+};
+
+const generateRhythmGuitarPatterns = (
+  section: Activations<RhythmGeneratorKeys>
+) => {
+  const rhythmInstruments: RhythmGeneratorKeys[] = ['Guitar1', 'Guitar2', 'Bass'];
+
+  // All rhythm instruments match the kick pattern
+  rhythmInstruments.forEach(instrument => {
+    section[instrument] = section.Kick;
+  });
+};
+
+const generateGuitarNotePatterns = (
+  section: Activations<RhythmGeneratorKeys>,
+  sectionLength: number
+) => {
+  const guitarNotes: RhythmGeneratorKeys[] = [
+    'CSharp1', 'C1', 'ASharp1', 'GSharp1', 'G1', 'F1'
+  ];
+
+  // Common djent chord progressions
+  const djentProgressions = [
+    ['F1', 'CSharp1', 'GSharp1', 'C1'], // i - V - ii - iv
+    ['F1', 'ASharp1', 'C1', 'GSharp1'], // i - IV - V - ii
+    ['CSharp1', 'F1', 'G1', 'ASharp1'], // V - i - ii - IV
+  ];
+
+  const selectedProgression = djentProgressions[Math.floor(Math.random() * djentProgressions.length)];
+  const quarterLength = Math.floor(sectionLength / 4);
+
+  for (let quarter = 0; quarter < 4; quarter++) {
+    const startIndex = quarter * quarterLength;
+    const endIndex = quarter === 3 ? sectionLength : (quarter + 1) * quarterLength;
+
+    // Use chord from progression if available, otherwise random
+    const chordNote = selectedProgression[quarter] ||
+      guitarNotes[Math.floor(Math.random() * guitarNotes.length)];
+
+    if (guitarNotes.includes(chordNote as RhythmGeneratorKeys)) {
+      for (let i = startIndex; i < endIndex; i++) {
+        // Only activate the note if the kick is active
+        section[chordNote as RhythmGeneratorKeys][i] = section.Kick[i];
+      }
+    }
+  }
+};
