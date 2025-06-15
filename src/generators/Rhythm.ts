@@ -396,28 +396,36 @@ const generateGuitarNotePatterns = (
     'CSharp4', 'C4', 'ASharp4', 'GSharp4', 'G4', 'F4'
   ];
 
-  // Common djent chord progressions
-  const djentProgressions = [
-    ['F1', 'CSharp1', 'GSharp1', 'C1'], // i - V - ii - iv
-    ['F1', 'ASharp1', 'C1', 'GSharp1'], // i - IV - V - ii
-    ['CSharp1', 'F1', 'G1', 'ASharp1'], // V - i - ii - IV
-  ];
+  // 60% chance to use all F1 for low octave rhythm notes
+  if (Math.random() < 0.6) {
+    // Use F1 for all rhythm notes
+    for (let i = 0; i < sectionLength; i++) {
+      section.F1[i] = section.Kick[i];
+    }
+  } else {
+    // Common djent chord progressions
+    const djentProgressions = [
+      ['F1', 'CSharp1', 'GSharp1', 'C1'], // i - V - ii - iv
+      ['F1', 'ASharp1', 'C1', 'GSharp1'], // i - IV - V - ii
+      ['CSharp1', 'F1', 'G1', 'ASharp1'], // V - i - ii - IV
+    ];
 
-  const selectedProgression = djentProgressions[Math.floor(Math.random() * djentProgressions.length)];
-  const quarterLength = Math.floor(sectionLength / 4);
+    const selectedProgression = djentProgressions[Math.floor(Math.random() * djentProgressions.length)];
+    const quarterLength = Math.floor(sectionLength / 4);
 
-  for (let quarter = 0; quarter < 4; quarter++) {
-    const startIndex = quarter * quarterLength;
-    const endIndex = quarter === 3 ? sectionLength : (quarter + 1) * quarterLength;
+    for (let quarter = 0; quarter < 4; quarter++) {
+      const startIndex = quarter * quarterLength;
+      const endIndex = quarter === 3 ? sectionLength : (quarter + 1) * quarterLength;
 
-    // Use chord from progression if available, otherwise random
-    const chordNote = selectedProgression[quarter] ||
-      guitarNotes[Math.floor(Math.random() * guitarNotes.length)];
+      // Use chord from progression if available, otherwise random
+      const chordNote = selectedProgression[quarter] ||
+        guitarNotes[Math.floor(Math.random() * guitarNotes.length)];
 
-    if (guitarNotes.includes(chordNote as RhythmGeneratorKeys)) {
-      for (let i = startIndex; i < endIndex; i++) {
-        // Only activate the note if the kick is active
-        section[chordNote as RhythmGeneratorKeys][i] = section.Kick[i];
+      if (guitarNotes.includes(chordNote as RhythmGeneratorKeys)) {
+        for (let i = startIndex; i < endIndex; i++) {
+          // Only activate the note if the kick is active
+          section[chordNote as RhythmGeneratorKeys][i] = section.Kick[i];
+        }
       }
     }
   }
