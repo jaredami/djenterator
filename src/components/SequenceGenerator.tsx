@@ -39,7 +39,7 @@ const sectionLength = 32 * 4;
 const totalSections = 16;
 
 const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
-  const [bpm, setBPM] = useState<number>(130);
+  const [bpm, setBPM] = useState<number>(Math.floor(Math.random() * 41) + 100);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentBeat, setCurrentBeat] = useState<number>(0);
   const [currentSection, setCurrentSection] = useState<number>(0);
@@ -245,6 +245,7 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
     restart();
     setActivations(newActivations);
     setDurations(songDurations);
+    setBPM(Math.floor(Math.random() * 41) + 100);
   }, [generators, keys, restart]);
 
   // Update current section tracking
