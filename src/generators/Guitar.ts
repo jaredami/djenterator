@@ -120,6 +120,7 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
       generateSustainedMelody,
       generateTechnicalRuns,
       generateAmbientSwells,
+      generateProgressiveChords,
     ];
 
     // If characteristics are provided, bias towards certain patterns
@@ -127,11 +128,11 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
     if (characteristics) {
       if (characteristics.polyrhythm) {
         selectedGenerator = generateTechnicalRuns; // Technical patterns for polyrhythm
-      } else if (characteristics.syncopation > 0.7) {
+      } else if (characteristics.syncopation && characteristics.syncopation > 0.7) {
         selectedGenerator = generatePentatonicLicks; // Licks work well with syncopation
-      } else if (characteristics.complexity > 0.6) {
+      } else if (characteristics.complexity && characteristics.complexity > 0.6) {
         selectedGenerator = Math.random() > 0.5 ? generateTechnicalRuns : generateMelodicScaleRun;
-      } else if (characteristics.density < 0.3) {
+      } else if (characteristics.density && characteristics.density < 0.3) {
         selectedGenerator = Math.random() > 0.5 ? generateAmbientSwells : generateSustainedMelody;
       } else {
         selectedGenerator = leadPatternGenerators[Math.floor(Math.random() * leadPatternGenerators.length)];
@@ -150,10 +151,41 @@ export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
     const longBeat = 2.0;    // Long sustain for melodic notes
     const veryLongBeat = 4.0; // Very long sustain for ambient sections
 
+    // First, detect chord positions (where multiple notes play simultaneously)
+    const chordPositions = new Set<number>();
+    for (let i = 0; i < section[GuitarGeneratorKeysArray[0]].length; i++) {
+      const activeNotesAtPosition = GuitarGeneratorKeysArray.filter(
+        instrument => section[instrument][i]
+      ).length;
+      if (activeNotesAtPosition >= 2) {
+        chordPositions.add(i);
+      }
+    }
+
     const generateInstrumentDurations = (beatsForNote: (boolean | null)[], instrumentName: GuitarGeneratorKeys) => {
       return beatsForNote.map((beat, index) => {
         if (!beat) return null;
 
+        // Check if this position is part of a chord
+        const isChordPosition = chordPositions.has(index);
+        if (isChordPosition) {
+          // For chord positions, sustain until the next chord or end of section
+          let sustainUntil = beatsForNote.length; // Default to end of section
+
+          // Find the next chord position
+          for (let i = index + 1; i < beatsForNote.length; i++) {
+            if (chordPositions.has(i)) {
+              sustainUntil = i;
+              break;
+            }
+          }
+
+          // Calculate duration in beats (each position is 0.25 beats)
+          const durationInBeats = (sustainUntil - index) * 0.25;
+          return durationInBeats;
+        }
+
+        // For non-chord positions (single notes), use the original logic
         // Check if ANY instrument has active beats before or after this position
         const hasAnyNoteBefore = index > 0 && GuitarGeneratorKeysArray.some(
           instrument => section[instrument][index - 1]
@@ -427,6 +459,118 @@ const generateAmbientSwells = (sectionLength: number) => {
       section[note][pos] = true;
     }
   });
+
+  return section;
+};
+
+// Lead guitar pattern: Progressive metal chords (multiple notes simultaneously)
+const generateProgressiveChords = (sectionLength: number) => {
+  const section = Object.fromEntries(
+    GuitarGeneratorKeysArray.map((instrument) => [
+      instrument,
+      Array(sectionLength).fill(false),
+    ]),
+  ) as Activations<GuitarGeneratorKeys>;
+
+  // Define progressive metal chord voicings using available notes
+  const progressiveChordProgressions = [
+    // Progression 1: Minor/Dark progression
+    [
+      ['F4', 'ASharp4', 'CSharp4'], // F minor add9
+      ['GSharp4', 'C4', 'F4'], // Ab major
+      ['G4', 'ASharp4', 'CSharp4'], // G minor sus2
+      ['F4', 'G4', 'C4'], // F sus2
+    ],
+    // Progression 2: Suspended/Open voicings
+    [
+      ['CSharp4', 'F4', 'ASharp4'], // C# sus4
+      ['C4', 'F4', 'G4'], // C sus4
+      ['ASharp4', 'CSharp4', 'GSharp4'], // Bb add2
+      ['G4', 'C4', 'F4'], // G sus4
+    ],
+    // Progression 3: Power chord variations
+    [
+      ['F4', 'C4'], // F5 power chord
+      ['G4', 'CSharp4'], // G5 (with b5)
+      ['ASharp4', 'F4'], // Bb5
+      ['GSharp4', 'CSharp4'], // Ab5 (with 4th)
+    ],
+    // Progression 4: Complex extended chords
+    [
+      ['F4', 'ASharp4', 'C4', 'GSharp4'], // F minor 7
+      ['CSharp4', 'G4', 'ASharp4'], // C# dim
+      ['G4', 'C4', 'F4', 'ASharp4'], // G minor 7
+      ['GSharp4', 'CSharp4', 'F4'], // Ab major
+    ],
+  ];
+
+  // Progressive metal rhythm patterns (in quarter note beats, 32 beats per bar)
+  const rhythmPatterns = [
+    [0, 16, 32, 48], // Standard progression - chord every half bar
+    [0, 32, 64], // Slow progression - chord every full bar
+    [0, 8, 24, 40, 56], // Syncopated pattern - off-beat changes
+    [0, 12, 32, 44], // Displaced pattern - unusual timing
+    [0, 16, 20, 32, 36, 48], // Complex syncopation with quick changes
+    [0, 32], // Very slow - chord every bar
+    [0, 8, 16, 24, 32, 40, 48, 56], // Rapid changes for breakdown sections
+    [0, 24, 48, 72], // 3/4 feel within 4/4
+    [0, 14, 32, 46], // 7/8 pattern across bars
+    [0, 16, 48, 64, 80], // Long sustains with quick changes
+  ];
+
+  // Choose random progression and rhythm pattern
+  const chosenProgression = progressiveChordProgressions[
+    Math.floor(Math.random() * progressiveChordProgressions.length)
+  ];
+  const chosenRhythm = rhythmPatterns[
+    Math.floor(Math.random() * rhythmPatterns.length)
+  ];
+
+  let chordIndex = 0;
+  let rhythmIndex = 0;
+
+  // Apply the rhythm pattern across the section
+  while (rhythmIndex < chosenRhythm.length) {
+    const position = chosenRhythm[rhythmIndex];
+
+    if (position >= sectionLength) break;
+
+    // Get current chord from progression
+    const currentChord = chosenProgression[chordIndex % chosenProgression.length];
+
+    // Activate all notes in the chord simultaneously
+    currentChord.forEach(note => {
+      if (GuitarGeneratorKeysArray.includes(note as GuitarGeneratorKeys)) {
+        section[note as GuitarGeneratorKeys][position] = true;
+      }
+    });
+
+    // Sometimes add chord variations (inversions or note omissions)
+    if (Math.random() < 0.3 && currentChord.length > 2) {
+      // Occasionally skip the middle note for a more open sound
+      const noteToSkip = currentChord[1] as GuitarGeneratorKeys;
+      if (GuitarGeneratorKeysArray.includes(noteToSkip)) {
+        section[noteToSkip][position] = false;
+      }
+    }
+
+    chordIndex++;
+    rhythmIndex++;
+  }
+
+  // Add some fills between chord hits for more progressive feel
+  // TODO - Implement this
+  if (Math.random() < 0) {
+    for (let i = 1; i < sectionLength; i += 4) {
+      if (!GuitarGeneratorKeysArray.some(note => section[note][i])) {
+        // Add a single note fill
+        const fillNote = GuitarGeneratorKeysArray[
+          Math.floor(Math.random() * GuitarGeneratorKeysArray.length)
+        ];
+        section[fillNote][i] = true;
+      }
+    }
+  }
 
   return section;
 };
