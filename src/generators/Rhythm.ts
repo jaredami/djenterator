@@ -324,6 +324,11 @@ const generateDrumPatterns = (
     }
 
     // Use djent patterns based on characteristics
+    // Calculate probability of using djent patterns:
+    // - Without characteristics: 30% chance (0.3)
+    // - With characteristics: 40% base + up to 40% more based on complexity
+    // - complexity = 0.0 → 40% chance, complexity = 1.0 → 80% chance
+    // Higher complexity = more intricate, syncopated djent rhythms
     const djentPatternChance = characteristics ?
       0.4 + (characteristics.complexity * 0.4) : 0.3;
 
