@@ -282,11 +282,93 @@ guitar2.connect(panRight);
 RhythmGenerator.clips.Guitar1 = guitar1;
 RhythmGenerator.clips.Guitar2 = guitar2;
 
+// Helper function to generate kick patterns
+const generateKickPattern = (
+  section: Activations<RhythmGeneratorKeys>,
+  sectionLength: number,
+  characteristics?: any
+) => {
+  const kickConfig = {
+    patterns: [],
+    always: [0],
+    djentPatterns: [
+      [0, 1, 4, 5, 8, 9, 12, 13], // Double bass gallop
+      [0, 3, 6, 7, 10, 13], // Syncopated doubles
+      [0, 2, 4, 7, 9, 11, 14], // Odd groupings
+      [0, 1, 2, 8, 9, 10], // Triplet groups
+    ]
+  };
+
+  const { patterns, always, djentPatterns } = kickConfig;
+
+  // Activate always-on beats
+  for (const i of always) {
+    section.Kick[i] = true;
+  }
+
+  // Use djent patterns based on characteristics
+  const djentPatternChance = characteristics ?
+    0.4 + (characteristics.complexity * 0.4) : 0.3;
+
+  if (djentPatterns && Math.random() > (1 - djentPatternChance)) {
+    const selectedDjentPattern = djentPatterns[Math.floor(Math.random() * djentPatterns.length)];
+    const measureLength = 16; // 16th notes per measure
+
+    for (let measure = 0; measure < Math.floor(sectionLength / measureLength); measure++) {
+      const measureStart = measure * measureLength;
+      selectedDjentPattern.forEach((beatOffset: number) => {
+        const absolutePosition = measureStart + beatOffset;
+        if (absolutePosition < sectionLength) {
+          section.Kick[absolutePosition] = true;
+        }
+      });
+    }
+  } else if (patterns.length === 0) {
+    section.Kick = section.Kick.map(
+      (beat) => beat || Math.random() > 0.5,
+    );
+  }
+};
+
 const generateDrumPatterns = (
   section: Activations<RhythmGeneratorKeys>,
   sectionLength: number,
   characteristics?: any
 ) => {
+  // 20% chance for drums to "open up" with spacious crash pattern
+  const getHeavy = Math.random() < 0.2;
+  if (getHeavy) {
+    // Heavy pattern: crash every 8 beats, snare on 3rd crash of every group of 4, no hi-hat
+    const crashPositions: number[] = [];
+
+    // Set crash every 8 beats
+    for (let i = 0; i < sectionLength; i += 8) {
+      section.Crash[i] = true;
+      crashPositions.push(i);
+    }
+
+    // Set snare on the 3rd crash of every group of 4 crashes
+    if (crashPositions.length >= 3) {
+      const groupsOf4 = Math.floor(crashPositions.length / 4);
+      for (let group = 0; group < groupsOf4; group++) {
+        const thirdCrashIndex = group * 4 + 2; // 0-indexed, so 2 is the 3rd position
+        if (thirdCrashIndex < crashPositions.length) {
+          const snarePosition = crashPositions[thirdCrashIndex];
+          if (snarePosition < sectionLength) {
+            section.Snare[snarePosition] = true;
+          }
+        }
+      }
+    }
+
+    // No hi-hat for heavy pattern
+    section['Hi-hat'] = Array(sectionLength).fill(false);
+
+    // Generate kick patterns using the helper function
+    generateKickPattern(section, sectionLength, characteristics);
+    return;
+  }
+
   const drumPatterns: Partial<PatternsMap> = {
     Crash: { patterns: [8, 32], always: [] },
     'Hi-hat': { patterns: [2, 3, 4], always: [] },
@@ -300,22 +382,12 @@ const generateDrumPatterns = (
         [2, 5, 8, 11, 14], // Complex fill-like
       ]
     },
-    Kick: {
-      patterns: [],
-      always: [0],
-      djentPatterns: [
-        [0, 1, 4, 5, 8, 9, 12, 13], // Double bass gallop
-        [0, 3, 6, 7, 10, 13], // Syncopated doubles
-        [0, 2, 4, 7, 9, 11, 14], // Odd groupings
-        [0, 1, 2, 8, 9, 10], // Triplet groups
-      ]
-    },
   };
 
   for (const [key, value] of Object.entries(drumPatterns)) {
     if (!value) continue;
 
-    const { patterns, always, djentPatterns } = value;
+    const { patterns, always, djentPatterns } = value as NonNullable<PatternConfig>;
     const typedKey = key as RhythmGeneratorKeys;
 
     // Activate always-on beats
@@ -338,7 +410,7 @@ const generateDrumPatterns = (
 
       for (let measure = 0; measure < Math.floor(sectionLength / measureLength); measure++) {
         const measureStart = measure * measureLength;
-        selectedDjentPattern.forEach(beatOffset => {
+        selectedDjentPattern.forEach((beatOffset: number) => {
           const absolutePosition = measureStart + beatOffset;
           if (absolutePosition < sectionLength) {
             section[typedKey][absolutePosition] = true;
@@ -375,6 +447,9 @@ const generateDrumPatterns = (
       }
     }
   }
+
+  // Generate kick patterns
+  generateKickPattern(section, sectionLength, characteristics);
 };
 
 const generateRhythmGuitarPatterns = (
