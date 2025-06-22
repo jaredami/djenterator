@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as Tone from 'tone';
 import '../App.scss';
 import { SectionTemplate, djentSongStructures } from '../types/SongStructure';
-import BeatGrid from './BeatGrid';
 import VirtualizedBeatGrid from './VirtualizedBeatGrid';
 import { VolumeControl } from './VolumeControl';
 
@@ -326,12 +325,9 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
     );
   }, [generators]);
 
-  // Use virtualized grid for large sequences
   const totalBeatsInSong = songStructure.length > 0
     ? songStructure.reduce((total, section) => total + section.length, 0)
     : sectionLength * totalSections;
-  const shouldUseVirtualizedGrid = totalBeatsInSong > 512;
-  const GridComponent = shouldUseVirtualizedGrid ? VirtualizedBeatGrid : BeatGrid;
 
   return (
     <>
@@ -375,7 +371,7 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
 
       {activations.map((generatorActivations, genIndex) => (
         <div key={genIndex} className="grid-container">
-          <GridComponent
+          <VirtualizedBeatGrid
             activations={generatorActivations}
             currentBeat={currentBeat}
             toggleBeat={beatGridToggleFunctions[genIndex]}
