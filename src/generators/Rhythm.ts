@@ -63,6 +63,7 @@ type PatternsMap = Record<RhythmGeneratorKeys, PatternConfig>;
 
 export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
   label: 'Drums and Rhythm Guitar',
+  masterVolume: -10,
   clips: {
     Crash: new Tone.Player(crashClip).toDestination(),
     'Hi-hat': new Tone.Player(hatOpenClip).toDestination(),

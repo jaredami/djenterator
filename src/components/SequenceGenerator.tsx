@@ -7,6 +7,7 @@ import { VolumeControl } from './VolumeControl';
 
 export type Generator<GeneratorKeys extends string> = {
   label: string;
+  masterVolume: number;
   clips: Record<GeneratorKeys, Tone.Player>;
   volumes: Record<GeneratorKeys, number>;
   offsets: Record<GeneratorKeys, number>;
@@ -77,13 +78,17 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
     generators.map((generator) => generator.volumes),
   );
 
+  const [masterVolumes, setMasterVolumes] = useState(
+    generators.map((generator) => generator.masterVolume),
+  );
+
   useEffect(() => {
     volumes.forEach((volume, genIndex) => {
       Object.entries(volume).forEach(([key, volume]) => {
-        generators[genIndex].clips[key].volume.value = volume;
+        generators[genIndex].clips[key].volume.value = volume + masterVolumes[genIndex];
       });
     });
-  }, [volumes, generators]);
+  }, [volumes, masterVolumes, generators]);
 
   useEffect(() => {
     Tone.Transport.bpm.value = bpm;
@@ -387,6 +392,19 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
         {volumeChangeHandlers.map((generatorHandlers, genIndex) => (
           <div key={genIndex} className="generator-volume-group">
             <h4>{generators[genIndex].label}</h4>
+            <div className="master-volume-control">
+              <VolumeControl
+                label="Master Volume"
+                value={masterVolumes[genIndex]}
+                onChange={(newVolume) => {
+                  setMasterVolumes((prevMasterVolumes) => {
+                    const newMasterVolumes = [...prevMasterVolumes];
+                    newMasterVolumes[genIndex] = newVolume;
+                    return newMasterVolumes;
+                  });
+                }}
+              />
+            </div>
             <div className="volume-controls-grid">
               {generatorHandlers.map(({ instrument, handler }) => (
                 <VolumeControl
