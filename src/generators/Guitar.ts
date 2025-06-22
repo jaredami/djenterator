@@ -49,6 +49,7 @@ const volume = -8;
 const offset = 0.05;
 
 export const GuitarGenerator: Generator<GuitarGeneratorKeys> = {
+  label: 'Lead Guitar',
   clips: {
     // E4: new Tone.Player(E4Clip).toDestination(),
     // 'D#4': new T4one.Player(DSharp4Clip).toDestination(),

@@ -6,6 +6,7 @@ import VirtualizedBeatGrid from './VirtualizedBeatGrid';
 import { VolumeControl } from './VolumeControl';
 
 export type Generator<GeneratorKeys extends string> = {
+  label: string;
   clips: Record<GeneratorKeys, Tone.Player>;
   volumes: Record<GeneratorKeys, number>;
   offsets: Record<GeneratorKeys, number>;
@@ -371,6 +372,7 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
 
       {activations.map((generatorActivations, genIndex) => (
         <div key={genIndex} className="grid-container">
+          <h3 className="generator-label">{generators[genIndex].label}</h3>
           <VirtualizedBeatGrid
             activations={generatorActivations}
             currentBeat={currentBeat}
@@ -382,18 +384,21 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
 
       <div className="volume-controls-container">
         <h3>Volume Controls</h3>
-        <div className="volume-controls-grid">
-          {volumeChangeHandlers.map((generatorHandlers, genIndex) =>
-            generatorHandlers.map(({ instrument, handler }) => (
-              <VolumeControl
-                key={`${genIndex}-${instrument}`}
-                label={instrument}
-                value={volumes[genIndex][instrument]}
-                onChange={handler}
-              />
-            ))
-          )}
-        </div>
+        {volumeChangeHandlers.map((generatorHandlers, genIndex) => (
+          <div key={genIndex} className="generator-volume-group">
+            <h4>{generators[genIndex].label}</h4>
+            <div className="volume-controls-grid">
+              {generatorHandlers.map(({ instrument, handler }) => (
+                <VolumeControl
+                  key={`${genIndex}-${instrument}`}
+                  label={instrument}
+                  value={volumes[genIndex][instrument]}
+                  onChange={handler}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </>
   );
