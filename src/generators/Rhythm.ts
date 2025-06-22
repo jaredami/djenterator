@@ -10,12 +10,12 @@ import hatOpenClip from '../sounds/hat-open.mp3';
 import kickClip from '../sounds/kick-metal.wav';
 import snareClip from '../sounds/snare-metal.wav';
 
-import CSharp4Clip from '../sounds/guitar/gCSharp4.mp3';
-import C4Clip from '../sounds/guitar/gC4.mp3';
-import ASharp4Clip from '../sounds/guitar/gASharp4.mp3';
-import GSharp4Clip from '../sounds/guitar/gGSharp4.mp3';
-import G4Clip from '../sounds/guitar/gG4.mp3';
-import F4Clip from '../sounds/guitar/gF4.mp3';
+import CSharp2Clip from '../sounds/guitar/CSharp-2.wav';
+import C2Clip from '../sounds/guitar/C-2.wav';
+import ASharp2Clip from '../sounds/guitar/ASharp-2.wav';
+import GSharp2Clip from '../sounds/guitar/GSharp-2.wav';
+import G2Clip from '../sounds/guitar/G-2.wav';
+import F2Clip from '../sounds/guitar/F-2.wav';
 
 import CSharp1Clip from '../sounds/guitar/guitar-CSharp.mp3';
 import C1Clip from '../sounds/guitar/guitar-C.mp3';
@@ -32,12 +32,12 @@ export const RhythmGeneratorKeysArray = [
   'Guitar1',
   'Guitar2',
   'Bass',
-  'CSharp4',
-  'C4',
-  'ASharp4',
-  'GSharp4',
-  'G4',
-  'F4',
+  'CSharp2',
+  'C2',
+  'ASharp2',
+  'GSharp2',
+  'G2',
+  'F2',
   'CSharp1',
   'C1',
   'ASharp1',
@@ -48,7 +48,8 @@ export const RhythmGeneratorKeysArray = [
 
 export type RhythmGeneratorKeys = (typeof RhythmGeneratorKeysArray)[number];
 
-const guitarNoteVolume = -5;
+const octave1GuitarNoteVolume = -5;
+const octave2GuitarNoteVolume = -18;
 const guitarNoteOffset = 0.05;
 
 type PatternConfig = {
@@ -69,12 +70,12 @@ export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
     Guitar1: new Tone.Player({ url: guitar1Clip, fadeOut: 0.01 }).toDestination(),
     Guitar2: new Tone.Player({ url: guitar2Clip, fadeOut: 0.01 }).toDestination(),
     Bass: new Tone.Player({ url: bassClip, fadeOut: 0.01 }).toDestination(),
-    CSharp4: new Tone.Player({ url: CSharp4Clip, fadeOut: 0.01 }).toDestination(),
-    C4: new Tone.Player({ url: C4Clip, fadeOut: 0.01 }).toDestination(),
-    ASharp4: new Tone.Player({ url: ASharp4Clip, fadeOut: 0.01 }).toDestination(),
-    GSharp4: new Tone.Player({ url: GSharp4Clip, fadeOut: 0.01 }).toDestination(),
-    G4: new Tone.Player({ url: G4Clip, fadeOut: 0.01 }).toDestination(),
-    F4: new Tone.Player({ url: F4Clip, fadeOut: 0.01 }).toDestination(),
+    CSharp2: new Tone.Player({ url: CSharp2Clip, fadeOut: 0.01 }).toDestination(),
+    C2: new Tone.Player({ url: C2Clip, fadeOut: 0.01 }).toDestination(),
+    ASharp2: new Tone.Player({ url: ASharp2Clip, fadeOut: 0.01 }).toDestination(),
+    GSharp2: new Tone.Player({ url: GSharp2Clip, fadeOut: 0.01 }).toDestination(),
+    G2: new Tone.Player({ url: G2Clip, fadeOut: 0.01 }).toDestination(),
+    F2: new Tone.Player({ url: F2Clip, fadeOut: 0.01 }).toDestination(),
     CSharp1: new Tone.Player({ url: CSharp1Clip, fadeOut: 0.01 }).toDestination(),
     C1: new Tone.Player({ url: C1Clip, fadeOut: 0.01 }).toDestination(),
     ASharp1: new Tone.Player({ url: ASharp1Clip, fadeOut: 0.01 }).toDestination(),
@@ -90,18 +91,18 @@ export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
     Guitar1: -170,
     Guitar2: -170,
     Bass: -180,
-    CSharp4: guitarNoteVolume,
-    C4: guitarNoteVolume,
-    ASharp4: guitarNoteVolume,
-    GSharp4: guitarNoteVolume,
-    G4: guitarNoteVolume,
-    F4: guitarNoteVolume,
-    CSharp1: guitarNoteVolume,
-    C1: guitarNoteVolume,
-    ASharp1: guitarNoteVolume,
-    GSharp1: guitarNoteVolume,
-    G1: guitarNoteVolume,
-    F1: guitarNoteVolume,
+    CSharp2: octave2GuitarNoteVolume,
+    C2: octave2GuitarNoteVolume,
+    ASharp2: octave2GuitarNoteVolume,
+    GSharp2: octave2GuitarNoteVolume,
+    G2: octave2GuitarNoteVolume,
+    F2: octave2GuitarNoteVolume,
+    CSharp1: octave1GuitarNoteVolume,
+    C1: octave1GuitarNoteVolume,
+    ASharp1: octave1GuitarNoteVolume,
+    GSharp1: octave1GuitarNoteVolume,
+    G1: octave1GuitarNoteVolume,
+    F1: octave1GuitarNoteVolume,
   },
   offsets: {
     Crash: 0,
@@ -111,12 +112,12 @@ export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
     Guitar1: 0,
     Guitar2: 0,
     Bass: 0,
-    CSharp4: guitarNoteOffset,
-    C4: guitarNoteOffset,
-    ASharp4: guitarNoteOffset,
-    GSharp4: guitarNoteOffset,
-    G4: guitarNoteOffset,
-    F4: guitarNoteOffset,
+    CSharp2: guitarNoteOffset,
+    C2: guitarNoteOffset,
+    ASharp2: guitarNoteOffset,
+    GSharp2: guitarNoteOffset,
+    G2: guitarNoteOffset,
+    F2: guitarNoteOffset,
     CSharp1: guitarNoteOffset,
     C1: guitarNoteOffset,
     ASharp1: guitarNoteOffset,
@@ -249,13 +250,13 @@ export const RhythmGenerator: Generator<RhythmGeneratorKeys> = {
       Guitar1: guitarAndBassDurations,
       Guitar2: guitarAndBassDurations,
       Bass: guitarAndBassDurations,
-      // 4th octave notes use short flurry durations to prevent overlap
-      CSharp4: generateFlurryDurations('CSharp4'),
-      C4: generateFlurryDurations('C4'),
-      ASharp4: generateFlurryDurations('ASharp4'),
-      GSharp4: generateFlurryDurations('GSharp4'),
-      G4: generateFlurryDurations('G4'),
-      F4: generateFlurryDurations('F4'),
+      // 2nd octave notes use short flurry durations to prevent overlap
+      CSharp2: generateFlurryDurations('CSharp2'),
+      C2: generateFlurryDurations('C2'),
+      ASharp2: generateFlurryDurations('ASharp2'),
+      GSharp2: generateFlurryDurations('GSharp2'),
+      G2: generateFlurryDurations('G2'),
+      F2: generateFlurryDurations('F2'),
       CSharp1: guitarAndBassDurations,
       C1: guitarAndBassDurations,
       ASharp1: guitarAndBassDurations,
@@ -471,9 +472,9 @@ const generateGuitarNotePatterns = (
     'CSharp1', 'C1', 'ASharp1', 'GSharp1', 'G1', 'F1'
   ];
 
-  // 4th octave notes for flurries
+  // 2nd octave notes for flurries
   const fourthOctaveNotes: RhythmGeneratorKeys[] = [
-    'CSharp4', 'C4', 'ASharp4', 'GSharp4', 'G4', 'F4'
+    'CSharp2', 'C2', 'ASharp2', 'GSharp2', 'G2', 'F2'
   ];
 
   // 60% chance to use all F1 for low octave rhythm notes
@@ -510,7 +511,7 @@ const generateGuitarNotePatterns = (
     }
   }
 
-  // 30% chance to add flurries of 4th octave notes in gaps between kick beats
+  // 30% chance to add flurries of 2nd octave notes in gaps between kick beats
   if (Math.random() < 0.3) {
     // Find gaps between kick beats
     for (let i = 0; i < sectionLength - 1; i++) {
@@ -526,13 +527,13 @@ const generateGuitarNotePatterns = (
 
         // Only add flurries to gaps that are 2-6 beats long
         if (gapLength >= 2 && gapLength <= 6) {
-          // Generate a flurry of 4th octave notes
+          // Generate a flurry of 2nd octave notes
           const flurryLength = Math.min(gapLength, Math.floor(Math.random() * 4) + 2);
 
           for (let k = 0; k < flurryLength; k++) {
             const beatIndex = gapStart + k;
             if (beatIndex < sectionLength) {
-              // Randomly select a 4th octave note for the flurry
+              // Randomly select a 2nd octave note for the flurry
               const flurryNote = fourthOctaveNotes[Math.floor(Math.random() * fourthOctaveNotes.length)];
               section[flurryNote][beatIndex] = true;
             }

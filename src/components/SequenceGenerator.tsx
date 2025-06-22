@@ -57,6 +57,7 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
         ) as Activations<string>,
     ),
   );
+  console.log("activations", activations);
 
   // Initialize durations to match activations (all beats for all instruments set to null)
   const [durations, setDurations] = useState(
@@ -70,6 +71,7 @@ const SequenceGenerator = ({ generators, keys }: SequenceGeneratorProps) => {
         ) as Record<string, (number | null)[] | null>,
     ),
   );
+  console.log("durations", durations);
 
   const [volumes, setVolumes] = useState(
     generators.map((generator) => generator.volumes),
